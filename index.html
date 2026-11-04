@@ -1,0 +1,297 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PEERS: Peer Evaluation System | KSU Capstone Team</title>
+  <meta name="description" content="PEERS is a web platform for peer evaluations in team-based courses. Our KSU capstone team made it production-ready with automated testing, Docker and a CI/CD pipeline.">
+  <meta name="theme-color" content="#0b1b2e">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css">
+  <script>document.documentElement.classList.add('js');</script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="site-header">
+    <nav class="nav" aria-label="Main">
+      <a class="brand" href="#top" aria-label="PEERS, back to the top">
+        <svg class="brand-mark" viewBox="0 0 32 32" width="28" height="28" aria-hidden="true" focusable="false">
+          <circle cx="16" cy="16" r="14" fill="none" stroke="currentColor" stroke-width="2"/>
+          <circle cx="16" cy="8" r="3" fill="currentColor"/>
+          <circle cx="8" cy="21" r="3" fill="currentColor"/>
+          <circle cx="24" cy="21" r="3" fill="currentColor"/>
+          <path d="M16 8 8 21h16z" fill="none" stroke="currentColor" stroke-width="1.5"/>
+        </svg>
+        <span>PEERS</span>
+      </a>
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-links">
+        <span class="visually-hidden">Menu</span>
+        <span class="burger" aria-hidden="true"></span>
+      </button>
+      <ul class="nav-links" id="nav-links">
+        <li><a href="#about">About</a></li>
+        <li><a href="#project">Our project</a></li>
+        <li><a href="#pipeline">Pipeline</a></li>
+        <li><a href="#team">Team</a></li>
+        <li><a href="#repository">Repository</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main id="main">
+    <!-- HERO -->
+    <section class="hero" id="top" aria-labelledby="hero-title">
+      <div class="container hero-inner">
+        <div class="hero-copy">
+          <p class="eyebrow">Kennesaw State University &middot; IT7993 Capstone &middot; Fall 2026</p>
+          <h1 id="hero-title">PEERS</h1>
+          <p class="hero-sub">Peer Evaluation System</p>
+          <p class="hero-text">
+            A web platform where professors manage peer evaluations in team-based courses.
+            Our capstone team turned the inherited application into a tested, containerized and
+            continuously delivered product.
+          </p>
+          <div class="hero-actions">
+            <a class="btn btn-primary" href="#pipeline">See the pipeline</a>
+            <a class="btn btn-ghost" href="https://github.com/IT7993-FALL-2026-PEERS/ProjectPeerEvaluation">View on GitHub</a>
+          </div>
+        </div>
+        <!-- Original artwork: five peers connected to each other, drawn for this site. -->
+        <svg class="hero-art" viewBox="0 0 400 400" aria-hidden="true" focusable="false">
+          <defs>
+            <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+              <stop offset="0" stop-color="#fdbb30" stop-opacity=".35"/>
+              <stop offset="1" stop-color="#fdbb30" stop-opacity="0"/>
+            </radialGradient>
+          </defs>
+          <circle cx="200" cy="200" r="190" fill="url(#glow)"/>
+          <circle cx="200" cy="200" r="140" fill="none" stroke="#5b86b3" stroke-opacity=".5" stroke-dasharray="3 7"/>
+          <g stroke="#9fc1e6" stroke-opacity=".55" stroke-width="1.5" fill="none">
+            <path d="M200 60 337 160 285 321 115 321 63 160Z"/>
+            <path d="M200 60 285 321 63 160 337 160 115 321Z"/>
+          </g>
+          <g fill="#0b1b2e" stroke="#fdbb30" stroke-width="3">
+            <circle cx="200" cy="60" r="22"/>
+            <circle cx="337" cy="160" r="22"/>
+            <circle cx="285" cy="321" r="22"/>
+            <circle cx="115" cy="321" r="22"/>
+            <circle cx="63" cy="160" r="22"/>
+          </g>
+          <g fill="#fdbb30">
+            <circle cx="200" cy="54" r="6"/><path d="M190 72a10 8 0 0 1 20 0z"/>
+            <circle cx="337" cy="154" r="6"/><path d="M327 172a10 8 0 0 1 20 0z"/>
+            <circle cx="285" cy="315" r="6"/><path d="M275 333a10 8 0 0 1 20 0z"/>
+            <circle cx="115" cy="315" r="6"/><path d="M105 333a10 8 0 0 1 20 0z"/>
+            <circle cx="63" cy="154" r="6"/><path d="M53 172a10 8 0 0 1 20 0z"/>
+          </g>
+          <path d="m200 178 6.6 13.4 14.8 2.1-10.7 10.4 2.5 14.7-13.2-7-13.2 7 2.5-14.7-10.7-10.4 14.8-2.1z" fill="#fdbb30"/>
+        </svg>
+      </div>
+    </section>
+
+    <!-- ABOUT -->
+    <section class="section" id="about" aria-labelledby="about-title">
+      <div class="container">
+        <h2 id="about-title">What PEERS does</h2>
+        <p class="lead">
+          Professors use PEERS to collect honest feedback from the members of a team, then review it
+          in one place.
+        </p>
+        <ul class="cards cards-3">
+          <li class="card">
+            <svg class="card-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M16 11a3 3 0 1 0-3-3 3 3 0 0 0 3 3Zm-8 0a3 3 0 1 0-3-3 3 3 0 0 0 3 3Zm0 2c-2.3 0-7 1.2-7 3.5V19h14v-2.5C15 14.2 10.3 13 8 13Zm8 0c-.3 0-.6 0-1 .1 1.2.8 2 1.9 2 3.4V19h6v-2.5c0-2.3-4.700-3.500-7-3.500Z" fill="currentColor"/></svg>
+            <h3>Rosters and teams</h3>
+            <p>Professors create courses, manage student rosters and assign students to teams.</p>
+          </li>
+          <li class="card">
+            <svg class="card-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3.500 7 8.500 6.500L20.500 7"/></g></svg>
+            <h3>Email invitations</h3>
+            <p>Students are invited by email to evaluate their teammates.</p>
+          </li>
+          <li class="card">
+            <svg class="card-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 20V10h4v10H4Zm6 0V4h4v16h-4Zm6 0v-7h4v7h-4Z" fill="currentColor"/></svg>
+            <h3>Reports</h3>
+            <p>Professors receive structured reports with both numeric and written feedback.</p>
+          </li>
+        </ul>
+        <p class="credit">
+          <strong>Credit where it is due:</strong> PEERS is a continuation of an earlier KSU senior
+          capstone project, and the application itself was built by that team
+          (<a href="https://github.com/SameerHerm/ProjectPeerEvaluation">original repository</a>).
+          Our team's work is everything that makes it production-ready.
+        </p>
+      </div>
+    </section>
+
+    <!-- OUR PROJECT -->
+    <section class="section section-alt" id="project" aria-labelledby="project-title">
+      <div class="container">
+        <h2 id="project-title">Our project: productionizing PEERS</h2>
+        <p class="lead">
+          The focus is not new features. It is turning the inherited app into a professionally
+          engineered product.
+        </p>
+        <div class="two-col">
+          <div>
+            <h3>What we set out to do</h3>
+            <ul class="checklist">
+              <li>Assess the inherited architecture, tech stack and test coverage</li>
+              <li>Build a full automated testing pyramid: unit, integration, functional regression and end-to-end tests</li>
+              <li>Containerize the app with Docker and Docker Compose, with a repeatable local setup</li>
+              <li>Run Continuous Integration with quality gates on every pull request</li>
+              <li>Run Continuous Delivery to a staging environment on Render, with smoke tests</li>
+              <li>Keep a Requirements Traceability Matrix that links requirements to automated tests</li>
+              <li>Document the architecture, testing strategy, Docker setup and release procedures</li>
+            </ul>
+          </div>
+          <div>
+            <h3>Out of scope</h3>
+            <ul class="plain-list">
+              <li>Redesigning the user interface</li>
+              <li>New application features</li>
+              <li>Replacing the tech stack</li>
+              <li>A commercial production hosting environment</li>
+              <li>Migrating databases</li>
+            </ul>
+            <h3>Built with</h3>
+            <ul class="chips" aria-label="Technologies">
+              <li>React</li>
+              <li>Express</li>
+              <li>MongoDB</li>
+              <li>Docker</li>
+              <li>GitHub Actions</li>
+              <li>Render</li>
+              <li>Playwright</li>
+              <li>Vitest</li>
+              <li>CodeQL</li>
+              <li>OWASP Dependency-Check</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PIPELINE -->
+    <section class="section" id="pipeline" aria-labelledby="pipeline-title">
+      <div class="container">
+        <h2 id="pipeline-title">From pull request to release</h2>
+        <p class="lead">
+          Every change reaches <code>main</code> through a pull request. The pipeline checks it,
+          ships it to staging and verifies the result. Production is the one step a person approves.
+        </p>
+        <ol class="steps">
+          <li class="step">
+            <span class="step-num" aria-hidden="true">1</span>
+            <h3>Pull request</h3>
+            <p>A developer opens a pull request into <code>main</code>. Direct pushes are rejected.</p>
+          </li>
+          <li class="step">
+            <span class="step-num" aria-hidden="true">2</span>
+            <h3>Continuous Integration</h3>
+            <p>GitHub Actions builds the app and runs static analysis, unit, integration and end-to-end tests, a container check, and security scans (CodeQL and OWASP Dependency-Check).</p>
+          </li>
+          <li class="step">
+            <span class="step-num" aria-hidden="true">3</span>
+            <h3>Quality gate</h3>
+            <p>Eight required checks must pass and the branch must be up to date before a merge is allowed.</p>
+          </li>
+          <li class="step">
+            <span class="step-num" aria-hidden="true">4</span>
+            <h3>Deploy to staging</h3>
+            <p>After a merge, Continuous Delivery deploys the exact commit that CI tested to staging on Render and waits until each service reports it.</p>
+          </li>
+          <li class="step">
+            <span class="step-num" aria-hidden="true">5</span>
+            <h3>Smoke tests and release candidate</h3>
+            <p>Smoke tests run against staging. Only if they pass does the pipeline record a release candidate. A failed deploy rolls back automatically.</p>
+          </li>
+          <li class="step step-human">
+            <span class="step-num" aria-hidden="true">6</span>
+            <h3>Production approval</h3>
+            <p>By design, a person approves: the sponsor or the team leader signs off before anything is promoted.</p>
+          </li>
+        </ol>
+        <p class="note">
+          Staging uses a test inbox, so no real student ever receives an email from it.
+        </p>
+      </div>
+    </section>
+
+    <!-- TEAM -->
+    <section class="section" id="team" aria-labelledby="team-title">
+      <div class="container">
+        <h2 id="team-title">The team</h2>
+        <p class="lead">Five students, one project.</p>
+        <ul class="cards cards-team">
+          <li class="card person">
+            <span class="avatar" aria-hidden="true">KH</span>
+            <h3>Khoa Ho</h3>
+            <p class="role">Team Leader</p>
+            <p>Frontend unit and integration tests, the end-to-end student workflow and automated test reporting.</p>
+          </li>
+          <li class="card person">
+            <span class="avatar" aria-hidden="true">DG</span>
+            <h3>Donald Gobin</h3>
+            <p class="role">CI/CD Architecture</p>
+            <p>CI/CD design, branch governance, the CI and CD pipelines, release procedures and final repository delivery.</p>
+          </li>
+          <li class="card person">
+            <span class="avatar" aria-hidden="true">AS</span>
+            <h3>Aaron Simpson</h3>
+            <p class="role">Containers &amp; Delivery</p>
+            <p>Development environment, Docker and Docker Compose, image builds, staging deployment and build reporting.</p>
+          </li>
+          <li class="card person">
+            <span class="avatar" aria-hidden="true">LN</span>
+            <h3>Laeticia Neno Aloyem</h3>
+            <p class="role">Requirements &amp; Security</p>
+            <p>Requirements validation and traceability, security scanning, and the assessment, testing and architecture documents.</p>
+          </li>
+          <li class="card person">
+            <span class="avatar" aria-hidden="true">KG</span>
+            <h3>Kylee Gipson</h3>
+            <p class="role">Backend &amp; Smoke Tests</p>
+            <p>Backend unit and integration tests, functional regression tests, the end-to-end instructor workflow and post-deploy smoke tests.</p>
+          </li>
+        </ul>
+        <!-- TODO before publishing: confirm naming the sponsor and the advisor. -->
+        <p class="thanks">
+          Thank you to our sponsor, Dr. Geetika Vyas, and our advisor, Ying Xie, for their guidance.
+        </p>
+      </div>
+    </section>
+
+    <!-- REPOSITORY -->
+    <section class="section section-alt" id="repository" aria-labelledby="repo-title">
+      <div class="container">
+        <h2 id="repo-title">Repository and documentation</h2>
+        <p class="lead">Everything we built is public on GitHub.</p>
+        <ul class="cards cards-3 link-cards">
+          <li class="card">
+            <h3><a href="https://github.com/IT7993-FALL-2026-PEERS/ProjectPeerEvaluation">Source code</a></h3>
+            <p>The PEERS repository, including the CI/CD workflows and every pull request.</p>
+          </li>
+          <li class="card">
+            <h3><a href="https://github.com/IT7993-FALL-2026-PEERS/ProjectPeerEvaluation/tree/main/docs/operations">Operations runbook</a></h3>
+            <p>How to release, roll back and recover, and how the pipeline is run.</p>
+          </li>
+          <li class="card">
+            <h3><a href="https://github.com/IT7993-FALL-2026-PEERS/ProjectPeerEvaluation/blob/main/docs/requirements/rtm.md">Requirements traceability</a></h3>
+            <p>Each requirement linked to the automated tests that cover it.</p>
+          </li>
+        </ul>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <p>PEERS &middot; Kennesaw State University capstone, Fall 2026</p>
+      <p class="footer-small">Site content checked against the project repository on Nov 4, 2026.</p>
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+</body>
+</html>
