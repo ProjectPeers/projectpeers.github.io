@@ -770,8 +770,10 @@
 
   // ---------- sound ----------
   // The Flash video's own audio track (voice-over and music), timed 1:1 with the walkthrough.
-  // It plays only while the walkthrough plays (never at rest), and the clock t stays in charge:
-  // the audio is moved back to t whenever it drifts.
+  // It plays only while the walkthrough plays (never at rest). While it plays, the sound is the clock:
+  // the animation speeds up or slows down slightly to follow it, and the audio is never seeked during
+  // playback (seeking it every time the two drifted apart is what made it stutter). It is seeked only
+  // when it starts, and on Replay or the slider.
   var soundBtn = fig.querySelector('[data-belt="sound"]');
   var audio = window.Audio ? new Audio() : null;
   var soundOn = true;
@@ -781,13 +783,14 @@
     var want = soundOn && playing && visible && !document.hidden;
     if (!want) { if (!audio.paused) audio.pause(); return; }
     if (audio.paused) {
-      try { audio.currentTime = t; } catch (e) { /* not loaded yet: the drift check below corrects it */ }
+      if (Math.abs(audio.currentTime - t) > 0.05) { try { audio.currentTime = t; } catch (e) { /* not loaded yet */ } }
       var p = audio.play();
       if (p && p.catch) p.catch(function () {});
-    } else if (audio.readyState >= 3 && !audio.seeking && Math.abs(audio.currentTime - t) > 0.25) {
-      audio.currentTime = t;
     }
   }
+  // True while the sound is actually playing and can lead the animation.
+  function audioLeads() { return audio && soundOn && !audio.paused && !audio.seeking && audio.readyState >= 3; }
+  function seekAudio(to) { if (audio && Math.abs(audio.currentTime - to) > 0.05) { try { audio.currentTime = to; } catch (e) { /* not loaded yet */ } } }
   if (soundBtn) {
     if (!audio) soundBtn.hidden = true;
     soundBtn.addEventListener('click', function () {
@@ -812,8 +815,8 @@
     if (!playing && t >= DURATION) t = 0;
     setPlaying(!playing);
   });
-  replayBtn.addEventListener('click', function () { t = 0; capIdx = -1; if (audio && !audio.paused) audio.currentTime = 0; setPlaying(true); });
-  scrub.addEventListener('input', function () { t = Number(scrub.value) / 10; render(t, amb); if (audio && !audio.paused) audio.currentTime = t; });
+  replayBtn.addEventListener('click', function () { t = 0; capIdx = -1; seekAudio(0); setPlaying(true); });
+  scrub.addEventListener('input', function () { t = Number(scrub.value) / 10; render(t, amb); seekAudio(t); });
   svg.addEventListener('click', function () { playBtn.click(); });
 
   function wanted() { return visible && !document.hidden && (playing || !reduceMotion); }
@@ -823,11 +826,16 @@
     last = now;
     if (!reduceMotion || playing) amb += dt;
     if (playing) {
-      t += dt;
+      if (audioLeads()) {
+        // Follow the sound smoothly: up to half again as fast or half as slow; jump only if far apart.
+        var diff = audio.currentTime - t;
+        t = Math.abs(diff) > 1 ? audio.currentTime : t + dt * (1 + clamp(diff * 2, -0.5, 0.5));
+      } else {
+        t += dt;
+      }
       if (t >= DURATION) { t = DURATION; render(t, amb); last = 0; setPlaying(false); return; }
     }
     render(t, amb);
-    if (playing) syncAudio();
     if (wanted()) raf = requestAnimationFrame(frame); else last = 0;
   }
   // Starts the frame loop when it should run and is not running (its first frame has no time step).
@@ -839,6 +847,8 @@
   if ('IntersectionObserver' in window) {
     new IntersectionObserver(function (entries) {
       visible = entries[0].isIntersecting;
+      // Fetch the sound (372 KB) once the scene is on screen, so Play starts without a wait.
+      if (visible && audio && audio.preload === 'none') { audio.preload = 'auto'; audio.load(); }
       syncAudio();
       loop();
     }, { threshold: 0.15 }).observe(fig);
