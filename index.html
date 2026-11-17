@@ -8,6 +8,7 @@
   <meta name="theme-color" content="#0b1b2e">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/pipeline-scene.css">
   <script>document.documentElement.classList.add('js');</script>
 </head>
 <body>
@@ -180,6 +181,29 @@
           Every change reaches <code>main</code> through a pull request. The pipeline checks it,
           ships it to staging and verifies the result. Production is the one step a person approves.
         </p>
+        <figure class="belt-scene" aria-labelledby="belt-title">
+          <h3 class="visually-hidden" id="belt-title">Animated pipeline walkthrough</h3>
+          <div class="belt-stage">
+            <svg role="img" aria-label="Animated conveyor belt: a code package moves from the developer through the pull request, CI checks, the quality gate, staging, smoke tests and production approval. The steps are described in the list below." focusable="false"></svg>
+            <p class="belt-caption" aria-hidden="true" hidden></p>
+          </div>
+          <div class="belt-controls">
+            <button class="btn btn-light btn-play" type="button" data-belt="play" aria-pressed="false">
+              <svg class="belt-icon icon-play" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M4 2.5v11l9-5.5z" fill="currentColor"/></svg>
+              <svg class="belt-icon icon-pause" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M4 2.5h3v11H4zm5 0h3v11H9z" fill="currentColor"/></svg>
+              <span class="belt-btn-label">Play</span>
+            </button>
+            <button class="btn btn-light" type="button" data-belt="replay">
+              <svg class="belt-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M8 3a5 5 0 1 1-4.6 3H1.8A6.5 6.5 0 1 0 8 1.5V0L4.8 2.2 8 4.5z" fill="currentColor"/></svg>
+              <span>Replay</span>
+            </button>
+            <label class="visually-hidden" for="belt-scrub">Walkthrough position</label>
+            <input class="belt-scrub" id="belt-scrub" type="range" min="0" max="300" step="1" value="0" data-belt="scrub">
+            <span class="belt-time" aria-hidden="true">0:00 / 0:30</span>
+          </div>
+          <p class="belt-hint">A 30-second walkthrough of how one change travels through the pipeline. The same steps are listed below.</p>
+          <p class="visually-hidden belt-live" aria-live="polite"></p>
+        </figure>
         <ol class="steps">
           <li class="step">
             <span class="step-num" aria-hidden="true">1</span>
@@ -293,5 +317,6 @@
   </footer>
 
   <script src="js/main.js"></script>
+  <script src="js/pipeline-scene.js"></script>
 </body>
 </html>
