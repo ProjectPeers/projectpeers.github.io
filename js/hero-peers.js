@@ -41,8 +41,15 @@
     return el('circle', { cx: p[0], cy: p[1], r: 22, fill: 'none', stroke: GOLD, 'stroke-width': 2, opacity: 0 }, fx);
   });
 
+  // Trend arrow inside the score circle, to the right of the number (which moves left to make room):
+  // green and pointing up when the score rises, red and pointing down when it falls.
+  var GREEN = '#3ddc84', RED = '#ff5c5c';
+  var scoreRing = svg.querySelector('.hero-score-ring');
+  var arrowHolder = el('g', { transform: 'translate(227 200)', opacity: 0 }, svg);
+  var arrow = el('path', { d: 'M0 -9 L7 -1 H2.6 V8.5 H-2.6 V-1 H-7 Z', fill: GREEN, 'stroke-linejoin': 'round' }, arrowHolder);
+
   // Timing of one round (seconds).
-  var ROUND = 2.8, SEND_A = 0.3, SEND_B = 1.35, ROLL_A = 1.4, ROLL_B = 2.05;
+  var ROUND = 2.8, SEND_A = 0.3, SEND_B = 1.35, ROLL_A = 1.4, ROLL_B = 2.05, FLICK = 0.035;
   function clamp(v) { return v < 0 ? 0 : v > 1 ? 1 : v; }
   function ease(p) { p = clamp(p); return p < 0.5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2; }
   function span(t, a, b) { return clamp((t - a) / (b - a)); }
@@ -52,7 +59,10 @@
   function render(time) {
     var n = Math.floor(time / ROUND), t = time - n * ROUND;
     var from = n % peers.length;
-    if (n !== round) { round = n; current = target; target = rnd(); }
+    if (n !== round) {
+      round = n; current = target;
+      do { target = rnd(); } while (target === current); // always a rise or a fall
+    }
 
     // The sender's ring brightens while it sends.
     rings.forEach(function (r, i) {
@@ -83,15 +93,36 @@
     }
     pulses[from].setAttribute('opacity', 0);
 
-    // The score rolls through random values, then settles on the new one.
+    // The score spins through random values, then settles on the new one.
     if (t >= ROLL_A && t < ROLL_B) {
-      if (time - lastFlick > 0.07) { score.textContent = rnd(); lastFlick = time; }
+      if (time - lastFlick > FLICK) { score.textContent = rnd(); lastFlick = time; }
     } else {
       score.textContent = t >= ROLL_B ? target : current;
     }
     var pop = t >= ROLL_B ? 1 - span(t, ROLL_B, ROLL_B + 0.35) : 0;
-    score.setAttribute('transform', 'translate(200 200) scale(' + (1 + 0.14 * pop).toFixed(3) + ') translate(-200 -200)');
+
+    // Trend: shown from the moment the score settles until the next spin starts (the change it shows is target - current
+    // of the round that settled; before the spin of the next round, that is current against the round before it).
+    var dir = 0, show = 0, age = 0;
+    if (t >= ROLL_B) { dir = target > current ? 1 : -1; show = span(t, ROLL_B, ROLL_B + 0.2); age = t - ROLL_B; }
+    else if (t < ROLL_A && n > 0) { dir = trend; show = 1 - span(t, ROLL_A - 0.2, ROLL_A); age = t + ROUND - ROLL_B; }
+    if (t >= ROLL_B) trend = dir;
+    var col = dir > 0 ? GREEN : dir < 0 ? RED : GOLD;
+    score.setAttribute('fill', show > 0.5 ? col : GOLD);
+    scoreRing.setAttribute('stroke', show > 0.5 ? col : GOLD);
+    arrowHolder.setAttribute('opacity', show.toFixed(2));
+    // The number shifts left while the arrow shows, and pops a little when it settles.
+    var shift = (String(score.textContent).length > 2 ? -12 : -9) * ease(show);
+    score.setAttribute('transform', 'translate(' + (200 + shift).toFixed(2) + ' 200) scale(' + (1 + 0.12 * pop).toFixed(3) + ') translate(-200 -200)');
+    if (dir) {
+      arrow.setAttribute('fill', col);
+      // Slides in along its direction, then keeps nudging that way.
+      var slide = (1 - ease(span(age, 0, 0.3))) * 4, bob = Math.abs(Math.sin(age * 5)) * 2;
+      var dy = dir > 0 ? slide - bob : -slide + bob;
+      arrow.setAttribute('transform', 'translate(0 ' + dy.toFixed(2) + ')' + (dir < 0 ? ' rotate(180)' : ''));
+    }
   }
+  var trend = 0;
 
   // Frame loop: runs only while the hero is on screen and the tab is visible.
   var visible = true, raf = 0, clock = 0, last = 0;
