@@ -350,8 +350,6 @@
     return { g: g, halo: halo, tint: tint };
   }
   var mainPkg = pkg(gFront), ghost = pkg(gFront);
-  var idlePkgs = [pkg(gFront), pkg(gFront), pkg(gFront)];
-  idlePkgs.forEach(function (p) { p.halo.setAttribute('opacity', 0); });
 
   // Red failure paths (screen-space arcs that draw themselves).
   function arc(from, to, lift) {
@@ -496,10 +494,7 @@
     gateCount.textContent = lit + '/8';
     fill(gateCount, lit === 8 ? GREEN : '#7a828c');
     gateWheel.setAttribute('transform', 'rotate(' + (prog(t, 14.3, 15.0) * 300 + prog(t, 26.6, 27.4) * -300).toFixed(1) + ')');
-    var open = prog(t, 14.6, 15.1) * (1 - prog(t, 16.2, 16.8)) + prog(t, 26.8, 27.3) * 0;
-    var pivot = [11.02, -4.8], ang = open * Math.PI / 2 * 0.95;
-    var a0 = iso(pivot[0], pivot[1], 1.2), a1 = iso(pivot[0], pivot[1] - 2.5 * Math.cos(ang), 1.2 + 2.5 * Math.sin(ang));
-    [arm, arm.armDash].forEach(function (l) { l.setAttribute('x1', a0[0]); l.setAttribute('y1', a0[1]); l.setAttribute('x2', a1[0].toFixed(1)); l.setAttribute('y2', a1[1].toFixed(1)); });
+    setArm(prog(t, 14.6, 15.1) * (1 - prog(t, 16.2, 16.8)));
 
     // Failure path 1: back to the pull request.
     var fa = prog(t, 12.3, 13.0);
@@ -515,22 +510,11 @@
     if (t >= 20.5 && t < 21.9) { status = 'rolling back'; col = RED; screen = '#2a1114'; bar = 1 - prog(t, 20.5, 21.6); rb = 1; }
     if (t >= 21.9) { status = 'last good release'; col = GREEN; bar = 1; }
     if (t >= 26.6) { status = 'live'; col = GREEN; }
-    if (stStatus.textContent !== status) stStatus.textContent = status;
-    fill(stStatus, col); fill(stLine, col === '#9aa3ad' ? GOLD : col); fill(stScreen, screen);
-    stLine.setAttribute('width', (2.0 * clamp(bar, 0, 1)).toFixed(3));
-    setOpacity(stIcon, rb);
+    setStaging(status, col, bar, screen, rb);
     stIcon.firstChild.setAttribute('transform', 'rotate(' + (-amb * 300 % 360).toFixed(1) + ')');
 
     // Smoke tests: chimney puffs while testing; fail, roll back, pass.
-    var testing = on(t, 18.4, 19.6, 0.2) + on(t, 22.0, 22.9, 0.2);
-    puffs.forEach(function (n, k) {
-      var ph = ((amb * 0.9 + k / puffs.length) % 1);
-      var base = n.base || (n.base = [Number(n.getAttribute('cx')), Number(n.getAttribute('cy'))]);
-      n.setAttribute('cx', (base[0] + ph * 14).toFixed(1));
-      n.setAttribute('cy', (base[1] - ph * 46).toFixed(1));
-      n.setAttribute('r', (4 + ph * 9).toFixed(1));
-      setOpacity(n, testing * (1 - ph) * 0.95);
-    });
+    setPuffs(on(t, 18.4, 19.6, 0.2) + on(t, 22.0, 22.9, 0.2), amb);
     smokeBars.forEach(function (n, k) {
       var colour = '#9c9a94';
       if (t >= 18.6 + k * 0.3) colour = GREEN;
@@ -546,14 +530,7 @@
     arcSmoke.dash.setAttribute('stroke-dashoffset', (-amb * 30).toFixed(1));
 
     // Production: approved stamp, the valve turns, the lock opens.
-    var approve = prog(t, 24.9, 25.2);
-    setOpacity(stamp, approve * (1 - prog(t, 26.3, 26.7)));
-    stamp.firstChild.setAttribute('transform', stamp.firstChild.getAttribute('transform').replace(/ scale\([^)]*\)/, '') + ' scale(' + (1.6 - 0.6 * approve).toFixed(3) + ')');
-    prodWheel.setAttribute('transform', 'rotate(' + (prog(t, 25.1, 25.7) * 360).toFixed(1) + ')');
-    var unlock = prog(t, 25.5, 25.8) * (1 - prog(t, 26.8, 27.2));
-    prodLock.setAttribute('transform', 'translate(0 ' + (-0.25 * unlock).toFixed(3) + ')');
-    fill(prodLock, 'none');
-    prodLock.setAttribute('stroke', unlock > 0.5 ? GREEN : INK);
+    setProd(prog(t, 24.9, 25.2), 1 - prog(t, 26.3, 26.7), prog(t, 25.1, 25.7) * 360, prog(t, 25.5, 25.8) * (1 - prog(t, 26.8, 27.2)));
 
     // Main package on the belt.
     var s = keyed(pkgPath, t)[0];
@@ -571,22 +548,10 @@
     var g = 0, gp = null;
     if (t >= 12.55 && t < 13.85) { g = 1; gp = arcPoint(arcGate, prog(t, 12.55, 13.6)); }
     if (t >= 19.9 && t < 21.0) { g = 1 - prog(t, 20.6, 21.0); gp = arcPoint(arcSmoke, prog(t, 19.9, 20.7)); }
-    setOpacity(ghost.g, g);
-    setOpacity(ghost.tint, 1);
-    setOpacity(ghost.halo, 0);
-    if (gp) ghost.g.setAttribute('transform', 'translate(' + gp.x.toFixed(1) + ' ' + (gp.y + 14).toFixed(1) + ') scale(0.8)');
-
-    // At rest, packages keep riding the belt from the desk to the rocket pad.
-    var resting = !playing && (t <= 0.05 || t >= DURATION - 0.05);
-    idlePkgs.forEach(function (p, k) {
-      var d = (amb * 1.5 + k * total / idlePkgs.length) % total;
-      var w = along(d), sc = iso(w[0], w[1], BELT_Z);
-      var edge = Math.min(1, d / 1.2, (total - d) / 1.2);
-      p.g.setAttribute('transform', 'translate(' + sc[0].toFixed(1) + ' ' + sc[1].toFixed(1) + ') scale(' + (0.4 + 0.6 * edge).toFixed(3) + ')');
-      setOpacity(p.g, resting ? edge : 0);
-    });
+    setGhost(g, gp);
 
     // Rocket launch at the end.
+    setOpacity(rocket, 1);
     var lift = prog(t, 26.7, 28.9);
     var shake = t > 26.5 && t < 27.0 ? Math.sin(amb * 80) * 1.2 : 0;
     rocket.setAttribute('transform', 'translate(' + shake.toFixed(2) + ' ' + (-lift * 620).toFixed(1) + ')');
@@ -622,9 +587,151 @@
     caption(t);
     scrub.value = Math.round(t * 10);
     timeOut.textContent = fmt(t) + ' / ' + fmt(DURATION);
+
+    // At rest (before Play, and after the walkthrough ends) the stations run the idle loop.
+    var resting = !playing && (t <= 0.05 || t >= DURATION - 0.05);
+    if (resting && !wasResting) idleStart = amb;
+    wasResting = resting;
+    if (resting) {
+      var age = amb - idleStart;
+      idle(age, amb, t >= DURATION - 0.05 && !reduceMotion ? clamp(age / 0.8, 0, 1) : 1);
+    }
   }
 
   function arcPoint(a, p) { var L = a.path.getTotalLength(); return a.path.getPointAtLength(L * clamp(p, 0, 1)); }
+
+  // ---------- station setters shared by the walkthrough and the idle loop ----------
+  function setArm(open) {
+    var pivot = [11.02, -4.8], ang = clamp(open, 0, 1) * Math.PI / 2 * 0.95;
+    var a0 = iso(pivot[0], pivot[1], 1.2), a1 = iso(pivot[0], pivot[1] - 2.5 * Math.cos(ang), 1.2 + 2.5 * Math.sin(ang));
+    [arm, arm.armDash].forEach(function (l) { l.setAttribute('x1', a0[0]); l.setAttribute('y1', a0[1]); l.setAttribute('x2', a1[0].toFixed(1)); l.setAttribute('y2', a1[1].toFixed(1)); });
+  }
+  function setStaging(status, col, bar, screen, rb) {
+    if (stStatus.textContent !== status) stStatus.textContent = status;
+    fill(stStatus, col); fill(stLine, col === '#9aa3ad' ? GOLD : col); fill(stScreen, screen);
+    stLine.setAttribute('width', (2.0 * clamp(bar, 0, 1)).toFixed(3));
+    setOpacity(stIcon, rb);
+  }
+  function setPuffs(testing, amb) {
+    puffs.forEach(function (n, k) {
+      var ph = ((amb * 0.9 + k / puffs.length) % 1);
+      var base = n.base || (n.base = [Number(n.getAttribute('cx')), Number(n.getAttribute('cy'))]);
+      n.setAttribute('cx', (base[0] + ph * 14).toFixed(1));
+      n.setAttribute('cy', (base[1] - ph * 46).toFixed(1));
+      n.setAttribute('r', (4 + ph * 9).toFixed(1));
+      setOpacity(n, clamp(testing, 0, 1) * (1 - ph) * 0.95);
+    });
+  }
+  // approve: stamp grows in (0 to 1); keep: stamp stays (1 to 0); deg: valve turn; unlock: lock open (0 to 1).
+  function setProd(approve, keep, deg, unlock) {
+    setOpacity(stamp, approve * keep);
+    stamp.firstChild.setAttribute('transform', stamp.firstChild.getAttribute('transform').replace(/ scale\([^)]*\)/, '') + ' scale(' + (1.6 - 0.6 * approve).toFixed(3) + ')');
+    prodWheel.setAttribute('transform', 'rotate(' + deg.toFixed(1) + ')');
+    prodLock.setAttribute('transform', 'translate(0 ' + (-0.25 * unlock).toFixed(3) + ')');
+    fill(prodLock, 'none');
+    prodLock.setAttribute('stroke', unlock > 0.5 ? GREEN : INK);
+  }
+  function setGhost(g, gp) {
+    setOpacity(ghost.g, g);
+    setOpacity(ghost.tint, 1);
+    setOpacity(ghost.halo, 0);
+    if (gp) ghost.g.setAttribute('transform', 'translate(' + gp.x.toFixed(1) + ' ' + (gp.y + 14).toFixed(1) + ') scale(0.8)');
+  }
+
+  // ---------- idle loop ----------
+  // Three changes take turns on the belt, one at a time, then the loop repeats:
+  //   1 'pass':  all checks green, the gate opens, staging goes live, smoke tests pass, production is approved.
+  //   2 'gate':  CI runs, one of the eight required checks fails, the gate stays shut, the change returns to the pull request.
+  //   3 'smoke': passes CI and the gate, deploys to staging, a smoke test fails, staging rolls back to the last good release.
+  // Belt distances: pull request 3, CI corner 12, gate 15, staging 24, smoke tests 27, production 36, rocket pad 42.6.
+  var ROUTE = [[0.3, 0], [2.0, 3], [3.0, 3], [5.5, 12], [7.6, 12], [8.4, 15]];
+  var IDLE = [
+    { kind: 'pass', len: 23, path: ROUTE.concat([[10.9, 15], [12.8, 24], [14.2, 24], [15.0, 27], [16.6, 27], [18.6, 36], [19.8, 36], [20.8, 42.6]]) },
+    { kind: 'gate', len: 14, path: ROUTE },
+    { kind: 'smoke', len: 21, path: ROUTE.concat([[10.9, 15], [12.8, 24], [14.2, 24], [15.0, 27]]) }
+  ];
+  var IDLE_CYCLE = IDLE.reduce(function (a, r) { return a + r.len; }, 0);
+  var idleStart = 0, wasResting = false;
+
+  function idle(age, amb, fadeIn) {
+    var u = age % IDLE_CYCLE, run = IDLE[0];
+    for (var i = 0; i < IDLE.length; i++) { run = IDLE[i]; if (u < run.len || i === IDLE.length - 1) break; u -= run.len; }
+    var kind = run.kind, gf = kind === 'gate', sf = kind === 'smoke', ok = kind === 'pass';
+    var through = !gf;              // gets past the quality gate
+    var live = u < run.len - 1.0;   // the stations reset during the last second
+
+    // Scene at rest: rocket on its pad (fades back in after a launch), phase labels shown.
+    setOpacity(rocket, fadeIn);
+    rocket.setAttribute('transform', 'translate(0 0)');
+    setOpacity(flame, 0);
+    setOpacity(phase, fadeIn);
+
+    // Pull request: the button glows when a change arrives, and again when a failed one comes back.
+    var glow = Math.max(on(u, 1.8, 3.2), gf ? on(u, 11.6, 13.0) : 0);
+    setOpacity(prButton.firstChild, 0.25 + 0.75 * glow * (0.75 + 0.25 * Math.sin(amb * 6)));
+
+    // CI: every change passes BUILD, LINT, TESTS, CODEQL and OWASP.
+    ciLeds.forEach(function (n, k) { fill(n, live && u >= 5.6 + k * 0.35 ? GREEN : LED_OFF); });
+    setOpacity(ciScreen, 0.55 + 0.45 * on(u, 3.0, 7.6));
+    ciGear.setAttribute('transform', 'rotate(' + ((amb * 40 + prog(u, 3.0, 7.4) * 540) % 360).toFixed(1) + ')');
+
+    // Quality gate: eight checks light up; for change 2 the E2E check fails and the gate stays shut.
+    var lit = 0;
+    gateLeds.forEach(function (n, k) {
+      var c = LED_OFF;
+      if (live && u >= 8.5 + k * 0.2) c = gf && k === 2 ? RED : GREEN;
+      fill(n, c);
+      if (c === GREEN) lit++;
+    });
+    gateCount.textContent = lit + '/8';
+    fill(gateCount, lit === 8 ? GREEN : gf && live && u >= 8.9 ? RED : '#7a828c');
+    gateWheel.setAttribute('transform', 'rotate(' + (through ? (prog(u, 10.1, 10.7) - prog(u, 12.2, 12.8)) * 300 : 0).toFixed(1) + ')');
+    setArm(through ? prog(u, 10.5, 10.9) * (1 - prog(u, 12.2, 12.7)) : 0);
+    setOpacity(arcGate.g, gf ? on(u, 10.3, 12.4, 0.2) : 0);
+    arcGate.base.setAttribute('stroke-dashoffset', (1 - (gf ? prog(u, 10.3, 10.9) : 0)).toFixed(3));
+    setOpacity(CALL.gateFail, gf ? on(u, 9.2, 12.6) : 0);
+
+    // Staging: deploys and goes live; for change 3 it rolls back to the last good release.
+    var status = 'waiting', col = '#9aa3ad', bar = 0, screen = '#111316', rb = 0;
+    if (through && live && u >= 12.8) { status = 'deploying'; col = GOLD; bar = prog(u, 12.8, 14.0); }
+    if (through && live && u >= 14.0) { status = 'live'; col = GREEN; bar = 1; }
+    if (sf && u >= 16.9 && u < 18.3) { status = 'rolling back'; col = RED; screen = '#2a1114'; bar = 1 - prog(u, 16.9, 18.1); rb = 1; }
+    if (sf && u >= 18.3 && live) { status = 'last good release'; col = GREEN; bar = 1; }
+    setStaging(status, col, bar, screen, rb);
+
+    // Smoke tests: pass for change 1; for change 3 the second check fails.
+    setPuffs(ok ? on(u, 15.0, 16.4, 0.2) : sf ? on(u, 15.0, 16.0, 0.2) : 0, amb);
+    smokeBars.forEach(function (n, k) {
+      var c = '#9c9a94';
+      if (ok && live && u >= 15.2 + k * 0.3) c = GREEN;
+      if (sf && live && k === 0 && u >= 15.2) c = GREEN;
+      if (sf && live && k === 1 && u >= 15.6) c = RED;
+      fill(n, c);
+    });
+    setOpacity(smokeTick, ok ? on(u, 16.4, 19.6, 0.25) : 0);
+    setOpacity(arcSmoke.g, sf ? on(u, 16.1, 18.4, 0.2) : 0);
+    arcSmoke.base.setAttribute('stroke-dashoffset', (1 - (sf ? prog(u, 16.1, 16.8) : 0)).toFixed(3));
+    setOpacity(CALL.smokeFail, sf ? on(u, 15.8, 19.2) : 0);
+
+    // Production: only change 1 gets here; it is approved, the valve turns and the lock opens.
+    setProd(ok ? prog(u, 18.8, 19.1) : 0, 1 - prog(u, 20.6, 21.0), ok ? prog(u, 19.0, 19.6) * 360 : 0, ok ? prog(u, 19.4, 19.7) * (1 - prog(u, 21.0, 21.4)) : 0);
+
+    // The change on the belt.
+    var s = keyed(run.path, u)[0];
+    var hideAt = gf ? 10.6 : sf ? 16.3 : 99;
+    var vis = u >= 0.3 && u < hideAt ? 1 : 0;
+    if (ok) vis *= 1 - prog(u, 20.4, 20.9);
+    var w = along(s), q = iso(w[0], w[1], BELT_Z);
+    mainPkg.g.setAttribute('transform', 'translate(' + q[0].toFixed(1) + ' ' + q[1].toFixed(1) + ') scale(' + prog(u, 0.3, 0.6).toFixed(3) + ')');
+    setOpacity(mainPkg.g, vis);
+    setOpacity(mainPkg.tint, gf ? on(u, 8.9, 10.8, 0.2) : sf ? on(u, 15.6, 16.5, 0.2) : 0);
+
+    // A failed change travels back along its red path.
+    var g = 0, gp = null;
+    if (gf && u >= 10.6 && u < 12.1) { g = 1 - prog(u, 11.8, 12.1); gp = arcPoint(arcGate, prog(u, 10.6, 11.9)); }
+    if (sf && u >= 16.3 && u < 17.5) { g = 1 - prog(u, 17.1, 17.5); gp = arcPoint(arcSmoke, prog(u, 16.3, 17.1)); }
+    setGhost(g, gp);
+  }
 
   // ---------- captions ----------
   var capBox = fig.querySelector('.belt-caption');
@@ -666,7 +773,7 @@
     playBtn.setAttribute('aria-pressed', String(v));
     playBtn.querySelector('.belt-btn-label').textContent = v ? 'Pause' : (t >= DURATION ? 'Play again' : 'Play');
     fig.classList.toggle('is-playing', v);
-    if (v) { capIdx = -1; }
+    if (v) { capIdx = -1; } else { render(t, amb); } // on stop, draw the rest state now (reduced motion has no next frame)
     loop();
   }
   playBtn.addEventListener('click', function () {
