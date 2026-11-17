@@ -58,7 +58,8 @@
             <a class="btn btn-ghost" href="https://github.com/IT7993-FALL-2026-PEERS/ProjectPeerEvaluation">View on GitHub</a>
           </div>
         </div>
-        <!-- Original artwork: five peers connected to each other, drawn for this site. -->
+        <!-- Original artwork: five peers connected to each other, drawn for this site.
+             js/hero-peers.js animates it: each peer in turn sends a review to the other four, and the score in the middle updates. -->
         <svg class="hero-art" viewBox="0 0 400 400" aria-hidden="true" focusable="false">
           <defs>
             <radialGradient id="glow" cx="50%" cy="50%" r="50%">
@@ -72,12 +73,13 @@
             <path d="M200 60 337 160 285 321 115 321 63 160Z"/>
             <path d="M200 60 285 321 63 160 337 160 115 321Z"/>
           </g>
+          <g class="hero-fx"></g>
           <g fill="#0b1b2e" stroke="#fdbb30" stroke-width="3">
-            <circle cx="200" cy="60" r="22"/>
-            <circle cx="337" cy="160" r="22"/>
-            <circle cx="285" cy="321" r="22"/>
-            <circle cx="115" cy="321" r="22"/>
-            <circle cx="63" cy="160" r="22"/>
+            <circle class="hero-peer" cx="200" cy="60" r="22"/>
+            <circle class="hero-peer" cx="337" cy="160" r="22"/>
+            <circle class="hero-peer" cx="285" cy="321" r="22"/>
+            <circle class="hero-peer" cx="115" cy="321" r="22"/>
+            <circle class="hero-peer" cx="63" cy="160" r="22"/>
           </g>
           <g fill="#fdbb30">
             <circle cx="200" cy="54" r="6"/><path d="M190 72a10 8 0 0 1 20 0z"/>
@@ -86,7 +88,8 @@
             <circle cx="115" cy="315" r="6"/><path d="M105 333a10 8 0 0 1 20 0z"/>
             <circle cx="63" cy="154" r="6"/><path d="M53 172a10 8 0 0 1 20 0z"/>
           </g>
-          <path d="m200 178 6.6 13.4 14.8 2.1-10.7 10.4 2.5 14.7-13.2-7-13.2 7 2.5-14.7-10.7-10.4 14.8-2.1z" fill="#fdbb30"/>
+          <circle cx="200" cy="200" r="34" fill="#0b1b2e" fill-opacity=".72" stroke="#fdbb30" stroke-opacity=".5" stroke-width="1.5"/>
+          <text class="hero-score" x="200" y="213" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="36" fill="#fdbb30">94</text>
         </svg>
       </div>
     </section>
@@ -322,6 +325,7 @@
   </footer>
 
   <script src="js/main.js"></script>
+  <script src="js/hero-peers.js"></script>
   <script src="js/pipeline-scene.js"></script>
 </body>
 </html>
