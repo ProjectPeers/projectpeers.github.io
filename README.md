@@ -11,4 +11,5 @@ Open `index.html` in a browser, or serve the folder (for example `npx serve .`).
 | `css/style.css` | Styles, responsive down to phone width |
 | `js/main.js` | Phone menu and current-section highlight (the page works without it) |
 | `css/pipeline-scene.css`, `js/pipeline-scene.js` | The animated conveyor-belt walkthrough in the Pipeline section (a recreation of the team's Flash video in plain SVG, with Play, Pause and Replay). Without JavaScript it stays hidden and the step cards show the same content |
+| `audio/pipeline-walkthrough.m4a` | The Flash video's sound track, played with the walkthrough (only after Play, with a Sound on/off button) |
 | `favicon.svg` | Tab icon |

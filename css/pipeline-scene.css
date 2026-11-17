@@ -34,6 +34,11 @@
 .belt-scene .icon-pause { display: none; }
 .belt-scene.is-playing .icon-pause { display: inline; }
 .belt-scene.is-playing .icon-play { display: none; }
+.btn-light.btn-sound[aria-pressed="false"] { background: #fff; color: var(--navy); }
+.btn-light.btn-sound[aria-pressed="false"]:hover { background: var(--bg-alt); }
+.belt-scene .icon-sound-off { display: none; }
+.belt-scene.is-muted .icon-sound-off { display: inline; }
+.belt-scene.is-muted .icon-sound-on { display: none; }
 .belt-scrub { flex: 1 1 10rem; accent-color: var(--navy-3); min-width: 8rem; }
 .belt-time { font-variant-numeric: tabular-nums; color: var(--muted); font-size: .95rem; min-width: 5.5rem; text-align: right; }
 .belt-hint { color: var(--muted); font-size: .95rem; margin: .6rem 0 0; }

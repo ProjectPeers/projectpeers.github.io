@@ -768,20 +768,52 @@
 
   var t = 0, amb = 0, playing = false, visible = false, last = 0, raf = 0;
 
+  // ---------- sound ----------
+  // The Flash video's own audio track (voice-over and music), timed 1:1 with the walkthrough.
+  // It plays only while the walkthrough plays (never at rest), and the clock t stays in charge:
+  // the audio is moved back to t whenever it drifts.
+  var soundBtn = fig.querySelector('[data-belt="sound"]');
+  var audio = window.Audio ? new Audio() : null;
+  var soundOn = true;
+  if (audio) { audio.preload = 'none'; audio.src = 'audio/pipeline-walkthrough.m4a'; }
+  function syncAudio() {
+    if (!audio) return;
+    var want = soundOn && playing && visible && !document.hidden;
+    if (!want) { if (!audio.paused) audio.pause(); return; }
+    if (audio.paused) {
+      try { audio.currentTime = t; } catch (e) { /* not loaded yet: the drift check below corrects it */ }
+      var p = audio.play();
+      if (p && p.catch) p.catch(function () {});
+    } else if (audio.readyState >= 3 && !audio.seeking && Math.abs(audio.currentTime - t) > 0.25) {
+      audio.currentTime = t;
+    }
+  }
+  if (soundBtn) {
+    if (!audio) soundBtn.hidden = true;
+    soundBtn.addEventListener('click', function () {
+      soundOn = !soundOn;
+      soundBtn.setAttribute('aria-pressed', String(soundOn));
+      soundBtn.querySelector('.belt-btn-label').textContent = soundOn ? 'Sound on' : 'Sound off';
+      fig.classList.toggle('is-muted', !soundOn);
+      syncAudio();
+    });
+  }
+
   function setPlaying(v) {
     playing = v;
     playBtn.setAttribute('aria-pressed', String(v));
     playBtn.querySelector('.belt-btn-label').textContent = v ? 'Pause' : (t >= DURATION ? 'Play again' : 'Play');
     fig.classList.toggle('is-playing', v);
     if (v) { capIdx = -1; } else { render(t, amb); } // on stop, draw the rest state now (reduced motion has no next frame)
+    syncAudio();
     loop();
   }
   playBtn.addEventListener('click', function () {
     if (!playing && t >= DURATION) t = 0;
     setPlaying(!playing);
   });
-  replayBtn.addEventListener('click', function () { t = 0; capIdx = -1; setPlaying(true); });
-  scrub.addEventListener('input', function () { t = Number(scrub.value) / 10; render(t, amb); });
+  replayBtn.addEventListener('click', function () { t = 0; capIdx = -1; if (audio && !audio.paused) audio.currentTime = 0; setPlaying(true); });
+  scrub.addEventListener('input', function () { t = Number(scrub.value) / 10; render(t, amb); if (audio && !audio.paused) audio.currentTime = t; });
   svg.addEventListener('click', function () { playBtn.click(); });
 
   function wanted() { return visible && !document.hidden && (playing || !reduceMotion); }
@@ -795,16 +827,19 @@
       if (t >= DURATION) { t = DURATION; render(t, amb); last = 0; setPlaying(false); return; }
     }
     render(t, amb);
+    if (playing) syncAudio();
     if (wanted()) raf = requestAnimationFrame(frame); else last = 0;
   }
   // Starts the frame loop when it should run and is not running (its first frame has no time step).
   function loop() {
     if (wanted() && !raf) { last = 0; raf = requestAnimationFrame(frame); }
   }
-  document.addEventListener('visibilitychange', loop);
+  // Scrolled away or tab hidden: the walkthrough holds still, so the sound pauses with it.
+  document.addEventListener('visibilitychange', function () { syncAudio(); loop(); });
   if ('IntersectionObserver' in window) {
     new IntersectionObserver(function (entries) {
       visible = entries[0].isIntersecting;
+      syncAudio();
       loop();
     }, { threshold: 0.15 }).observe(fig);
   } else { visible = true; }
