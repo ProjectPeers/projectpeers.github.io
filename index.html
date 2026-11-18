@@ -290,31 +290,37 @@
         </figure>
         <ol class="steps">
           <li class="step">
+            <span class="step-node" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="2.2"/><circle cx="6" cy="18" r="2.2"/><circle cx="18" cy="18" r="2.2"/><path d="M6 8.2v7.6M18 15.8V10a3 3 0 0 0-3-3h-4"/><path d="M13 4.8 10.8 7 13 9.2"/></svg></span>
             <span class="step-num" aria-hidden="true">1</span>
             <h3>Pull request</h3>
             <p>A developer opens a pull request into <code>main</code>. Direct pushes are rejected.</p>
           </li>
           <li class="step">
+            <span class="step-node" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2.8v2.6M12 18.6v2.6M2.8 12h2.6M18.6 12h2.6M5.5 5.5l1.8 1.8M16.7 16.7l1.8 1.8M5.5 18.5l1.8-1.8M16.7 7.3l1.8-1.8"/></svg></span>
             <span class="step-num" aria-hidden="true">2</span>
             <h3>Continuous Integration</h3>
             <p>GitHub Actions builds the app and runs static analysis, unit, integration and end-to-end tests, a container check, and security scans (CodeQL and OWASP Dependency-Check).</p>
           </li>
           <li class="step">
+            <span class="step-node" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 5 6v5.5c0 4.4 3 7.8 7 9.5 4-1.7 7-5.1 7-9.5V6z"/><path d="m8.8 12 2.2 2.2 4.2-4.4"/></svg></span>
             <span class="step-num" aria-hidden="true">3</span>
             <h3>Quality gate</h3>
             <p>Eight required checks must pass and the branch must be up to date before a merge is allowed.</p>
           </li>
           <li class="step">
+            <span class="step-node" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7.5 18.5H6.8a4.3 4.3 0 0 1-.6-8.5A5.8 5.8 0 0 1 17.4 8.6a4.6 4.6 0 0 1-.4 9.9h-.5"/><path d="M12 20.5v-8M9 15l3-3 3 3"/></svg></span>
             <span class="step-num" aria-hidden="true">4</span>
             <h3>Deploy to staging</h3>
             <p>After a merge, Continuous Delivery deploys the exact commit that CI tested to staging on Render and waits until each service reports it.</p>
           </li>
           <li class="step">
+            <span class="step-node" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 3h5M10.5 3v6.2L5.3 18a2 2 0 0 0 1.7 3h10a2 2 0 0 0 1.7-3l-5.2-8.8V3"/><path d="M7.6 15h8.8"/></svg></span>
             <span class="step-num" aria-hidden="true">5</span>
             <h3>Smoke tests and release candidate</h3>
             <p>Smoke tests run against staging. Only if they pass does the pipeline record a release candidate. A failed deploy rolls back automatically.</p>
           </li>
           <li class="step step-human">
+            <span class="step-node" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9.5" cy="8" r="3.5"/><path d="M3.5 20c.6-3.6 3-5.5 6-5.5 1.4 0 2.6.4 3.6 1.1"/><path d="m15.5 18 2 2 4-4.2"/></svg></span>
             <span class="step-num" aria-hidden="true">6</span>
             <h3>Production approval</h3>
             <p>By design, a person approves: the sponsor or the team leader signs off before anything is promoted.</p>
@@ -408,16 +414,19 @@
         <p class="kicker" aria-hidden="true">06 · Repository</p>
         <h2 id="repo-title">Repository and documentation</h2>
         <p class="lead">Everything we built is public on GitHub.</p>
-        <ul class="cards cards-3 link-cards">
+        <ul class="cards cards-3 link-cards doc-tiles">
           <li class="card">
+            <svg class="tile-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
             <h3><a href="https://github.com/IT7993-FALL-2026-PEERS/ProjectPeerEvaluation">Source code</a></h3>
             <p>The PEERS repository, including the CI/CD workflows and every pull request.</p>
           </li>
           <li class="card">
+            <svg class="tile-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4.5A1.5 1.5 0 0 1 5.5 3H19v15H5.5A1.5 1.5 0 0 0 4 19.5z"/><path d="M4 19.5A1.5 1.5 0 0 0 5.5 21H19v-3"/><path d="M8 7.5h7M8 11h5"/></svg>
             <h3><a href="https://github.com/IT7993-FALL-2026-PEERS/ProjectPeerEvaluation/tree/main/docs/operations">Operations runbook</a></h3>
             <p>How to release, roll back and recover, and how the pipeline is run.</p>
           </li>
           <li class="card">
+            <svg class="tile-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9.5h18M9.5 9.5V20"/><path d="m12.5 15 1.7 1.7 3.3-3.4"/></svg>
             <h3><a href="https://github.com/IT7993-FALL-2026-PEERS/ProjectPeerEvaluation/blob/main/docs/requirements/rtm.md">Requirements traceability</a></h3>
             <p>Each requirement linked to the automated tests that cover it.</p>
           </li>
@@ -442,6 +451,7 @@
   <script src="js/vendor/gsap.min.js"></script>
   <script src="js/vendor/SplitText.min.js"></script>
   <script src="js/vendor/ScrambleTextPlugin.min.js"></script>
+  <script src="js/vendor/ScrollTrigger.min.js"></script>
   <script src="js/main.js"></script>
   <script src="js/hero-peers.js"></script>
   <script src="js/about-report.js"></script>
@@ -449,5 +459,6 @@
   <script src="js/site-motion.js"></script>
   <script src="js/project-runner.js"></script>
   <script src="js/team-reveal.js"></script>
+  <script src="js/scroll-story.js"></script>
 </body>
 </html>

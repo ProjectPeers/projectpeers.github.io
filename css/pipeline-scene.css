@@ -62,7 +62,8 @@
 
 /* The step cards follow the walkthrough: the step it is showing lights up, and "Watch" plays from that step. */
 .js .steps .step { transition: border-color .25s, background-color .25s, transform .25s; }
-.steps .step.is-current { border-color: var(--line-strong); border-top-color: var(--gold); background: var(--surface-2); transform: translateY(-2px); }
+.steps .step.is-current { border-color: var(--line-strong); border-left-color: var(--gold); background: var(--surface-2); transform: translateX(3px); }
+.steps .step.is-current .step-node { background: var(--gold); color: var(--navy); border-color: var(--gold); }
 .steps .step.is-current .step-num { background: var(--gold); color: var(--navy); border-color: var(--gold); }
 .step-watch {
   position: absolute; top: 1.1rem; right: 1rem; display: inline-flex; align-items: center; gap: .35rem;
@@ -83,7 +84,8 @@
   .belt-stage { border-radius: 10px; }
   .belt-controls .btn-light { flex: 1 1 auto; justify-content: center; }
   .belt-scrub { flex-basis: 100%; min-height: 2.75rem; }
-  .step-watch { min-height: 2.75rem; top: 1rem; }
+  /* On a phone the Watch button sits under the step's text, so it never covers a long title. */
+  .step-watch { position: static; justify-self: start; margin-top: .85rem; min-height: 2.75rem; }
 }
 @media (forced-colors: active) {
   .belt-stage { border: 2px solid CanvasText; }

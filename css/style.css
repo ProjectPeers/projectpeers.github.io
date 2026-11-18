@@ -21,6 +21,11 @@
   --subtle: #9aaabe;        /* meta and captions (7.8:1 on canvas) */
 
   --radius: 12px;
+  /* Motion and depth. Easings are Open Props values (open-props.style, MIT), copied in rather than loaded. */
+  --ease-3: cubic-bezier(.25, 0, .3, 1);
+  --ease-out-3: cubic-bezier(0, 0, .3, 1);
+  --ease-spring-2: cubic-bezier(.5, -.3, .1, 1.5);
+  --shadow-lift: 0 1px 0 rgba(255, 255, 255, .04) inset, 0 14px 32px -16px rgba(0, 0, 0, .7);
   --serif: Georgia, "Times New Roman", serif;
   --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --mono: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, monospace;   /* technical labels only */
@@ -40,6 +45,12 @@ body {
 img, svg { max-width: 100%; }
 a { color: var(--ink); text-decoration-color: rgba(253, 187, 48, .7); text-underline-offset: .2em; }
 a:hover { text-decoration-color: var(--gold); text-decoration-thickness: 2px; }
+.lead a, .note a, .site-footer a {
+  text-decoration: none; background: linear-gradient(var(--gold), var(--gold)) left bottom / 0% 2px no-repeat,
+    linear-gradient(rgba(253, 187, 48, .45), rgba(253, 187, 48, .45)) left bottom / 100% 1px no-repeat;
+  padding-bottom: 1px; transition: background-size .35s var(--ease-out-3);
+}
+.lead a:hover, .note a:hover, .site-footer a:hover { background-size: 100% 2px, 100% 1px; }
 code { font-size: .9em; background: var(--surface-2); color: var(--muted); padding: .1em .4em; border-radius: 6px; border: 1px solid var(--line); }
 ul, ol { margin: 0; padding: 0; list-style: none; }
 h1, h2, h3 { line-height: 1.2; margin: 0; }
@@ -298,30 +309,84 @@ p { margin: 0 0 1rem; }
 .chips-icons li { display: inline-flex; align-items: center; gap: .45rem; padding: .3rem .65rem; }
 .chip-icon { width: 1rem; height: 1rem; flex: none; }
 
-/* Pipeline */
-.steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; counter-reset: none; }
-.step { position: relative; background: var(--surface); border: 1px solid var(--line); border-top: 3px solid var(--line-strong); border-radius: var(--radius); padding: 1.5rem; }
-.step p:last-child { margin-bottom: 0; color: var(--muted); }
-.step-num {
-  display: grid; place-items: center; width: 2rem; height: 2rem; border-radius: 50%;
-  background: var(--surface-2); border: 1px solid var(--line-strong); color: var(--gold); font-family: var(--mono); font-size: .85rem; font-weight: 600; margin-bottom: .75rem;
-  transition: background-color .25s, color .25s, border-color .25s;
+/* Pipeline: the six steps sit on a vertical track. Each has an icon station on the rail; the rail fills
+   with gold as the reader scrolls (js/scroll-story.js sets --fill) and each station lights once reached. */
+.steps { position: relative; isolation: isolate; display: grid; gap: .9rem; padding-left: 4.25rem; --fill: 1; }   /* full rail without JS */
+.steps::before, .steps::after {
+  content: ""; position: absolute; z-index: -1; left: 1.55rem; top: 1.6rem; bottom: 1.6rem; width: 3px; border-radius: 3px;
 }
-.step-human { border-top-color: var(--gold); background: var(--surface-2); }
+.steps::before { background: var(--line); }
+.steps::after { background: linear-gradient(var(--gold), #ffd067); transform-origin: top; transform: scaleY(var(--fill)); }
+.step {
+  position: relative; display: grid; grid-template-columns: minmax(13rem, 17rem) 1fr; column-gap: 2rem; align-items: start;
+  background: var(--surface); border: 1px solid var(--line); border-left: 3px solid var(--line-strong);
+  border-radius: var(--radius); padding: 1.15rem 8rem 1.15rem 1.4rem;
+}
+.step h3 { grid-column: 1; margin: .1rem 0 0; display: flex; align-items: baseline; gap: .6rem; }
+.step p { grid-column: 2; grid-row: 1 / span 2; margin: 0; color: var(--muted); }
+.step-num {
+  grid-column: 1; grid-row: 1; justify-self: start; font-family: var(--mono); font-size: .72rem; font-weight: 600;
+  letter-spacing: .08em; color: var(--gold); padding: .1rem .45rem; border-radius: 999px; border: 1px solid rgba(253, 187, 48, .35);
+  margin-bottom: .45rem; transition: background-color .25s, color .25s, border-color .25s;
+}
+.step-num::before { content: "STEP "; }
+.step-num + h3 { grid-row: 2; }
+.step-node {
+  position: absolute; z-index: 1; left: -4.25rem; top: .95rem; display: grid; place-items: center; width: 3.35rem; height: 3.35rem;
+  border-radius: 50%; background: var(--canvas); border: 2px solid var(--line-strong); color: var(--subtle);
+  transition: border-color .35s var(--ease-3), color .35s var(--ease-3), box-shadow .35s var(--ease-3), transform .35s var(--ease-spring-2);
+}
+.step-node svg { width: 1.45rem; height: 1.45rem; }
+.step.is-reached .step-node { border-color: var(--gold); color: var(--gold); box-shadow: 0 0 0 5px rgba(253, 187, 48, .12); }
+.step.is-reached { border-left-color: var(--gold); }
+.step:hover .step-node { transform: scale(1.08); }
+.step-human { background: var(--surface-2); border-left-color: var(--gold); }
+.step-human .step-node { border-style: dashed; }
 .note { margin-top: 1.5rem; margin-bottom: 0; }
+
+/* Repository: document tiles. On hover a gold gradient runs round the border (a CSS-only effect in the
+   style of Uiverse components), the tile lifts and the arrow steps on. */
+@property --tile-angle { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
+.doc-tiles .card {
+  display: flex; flex-direction: column; gap: .2rem; padding: 1.6rem; border: 1px solid transparent; isolation: isolate;
+  background: linear-gradient(var(--surface), var(--surface)) padding-box,
+    conic-gradient(from var(--tile-angle), var(--line) 0 60%, rgba(253, 187, 48, .9) 80%, var(--line) 100%) border-box;
+  transition: transform .3s var(--ease-3), box-shadow .3s var(--ease-3);
+}
+.doc-tiles .card:hover, .doc-tiles .card:focus-within {
+  transform: translateY(-3px); box-shadow: var(--shadow-lift); animation: tile-spin 2.4s linear infinite;
+  background: linear-gradient(var(--surface-2), var(--surface-2)) padding-box,
+    conic-gradient(from var(--tile-angle), var(--line-strong) 0 55%, var(--gold) 80%, var(--line-strong) 100%) border-box;
+}
+@keyframes tile-spin { to { --tile-angle: 360deg; } }
+.tile-icon {
+  width: 2.75rem; height: 2.75rem; padding: .6rem; margin-bottom: .9rem; border-radius: 12px; color: var(--gold);
+  background: rgba(253, 187, 48, .08); border: 1px solid rgba(253, 187, 48, .25); transition: transform .35s var(--ease-spring-2);
+}
+.doc-tiles .card:hover .tile-icon { transform: rotate(-6deg) scale(1.06); }
+
+/* Scroll reveals (js/scroll-story.js): elements rise in once, using the individual "translate" and "scale"
+   properties so they never fight a card's own transform transition. Shown as-is without JS. */
+.reveal-ready { translate: 0 var(--ry, 0px); scale: var(--rs, 1); }
 
 /* Footer */
 .site-footer { background: var(--canvas); color: var(--muted); padding: 2.5rem 0; border-top: 1px solid var(--line); }
 .site-footer p { margin: 0 0 .3rem; }
 .footer-small { font-family: var(--mono); font-size: .78rem; color: var(--subtle); }
-.footer-credit { max-width: 46rem; margin: .75rem 0 1rem; font-size: .9rem; color: var(--subtle); }
+.footer-credit {
+  max-width: 46rem; margin: 1rem 0 1.1rem; padding: 1rem 1.2rem; font-size: .9rem; color: var(--muted);
+  background: var(--surface); border: 1px solid var(--line); border-left: 3px solid var(--gold); border-radius: var(--radius);
+}
 .footer-credit strong { color: var(--ink); }
 
 /* Tablet and phone */
 @media (max-width: 900px) {
   .hero-inner { grid-template-columns: 1fr; }
   .hero-art { max-width: 300px; order: -1; }
-  .cards-3, .steps { grid-template-columns: 1fr; }
+  .cards-3 { grid-template-columns: 1fr; }
+  .step { grid-template-columns: 1fr; padding: 1.1rem 1.1rem 1.1rem 1.2rem; }
+  .step p { grid-column: 1; grid-row: auto; margin-top: .5rem; }
+  .step-num { margin-right: 6.5rem; }
   .two-col { grid-template-columns: 1fr; }
   .mentors { grid-template-columns: 1fr; }
   .runner-body { grid-template-columns: 1fr; gap: 1.75rem; padding: 1.25rem; }
@@ -341,13 +406,18 @@ p { margin: 0 0 1rem; }
   .js .nav-links { display: none; }
   .js .nav-links.is-open { display: flex; }
 }
-@media (min-width: 901px) and (max-width: 1100px) {
-  .steps { grid-template-columns: repeat(2, 1fr); }
+@media (max-width: 600px) {
+  .steps { padding-left: 3.1rem; }
+  .steps::before, .steps::after { left: 1.05rem; }
+  .step-node { left: -3.1rem; width: 2.5rem; height: 2.5rem; }
+  .step-node svg { width: 1.15rem; height: 1.15rem; }
+  .step-num { margin-right: 0; }
 }
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   *, *::before, *::after { transition: none !important; animation: none !important; }
+  .steps::after { transform: none; }
 }
 @media (forced-colors: active) {
   .btn, .card, .step { border: 2px solid CanvasText; }
