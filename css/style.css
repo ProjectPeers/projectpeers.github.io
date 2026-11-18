@@ -113,6 +113,9 @@ p { margin: 0 0 1rem; }
 .hero-text { max-width: 34rem; font-size: 1.15rem; color: var(--muted); }
 .hero-actions { display: flex; flex-wrap: wrap; gap: .75rem; margin-top: 1.5rem; }
 .hero-art { width: 100%; max-width: 420px; justify-self: center; }
+/* The title animates in (js/site-motion.js); until then it stays hidden so it never flashes in plain.
+   A timer in the head shows it after 2 seconds anyway, should the script not run. */
+.js:not(.title-ready) #hero-title, .js:not(.title-ready) .hero-sub { visibility: hidden; }
 
 /* One button pair for the whole page: gold primary, quiet secondary. */
 .btn {

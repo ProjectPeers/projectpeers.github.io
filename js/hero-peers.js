@@ -48,13 +48,50 @@
   var arrowHolder = el('g', { transform: 'translate(227 200)', opacity: 0 }, svg);
   var arrow = el('path', { d: 'M0 -9 L7 -1 H2.6 V8.5 H-2.6 V-1 H-7 Z', fill: GREEN, 'stroke-linejoin': 'round' }, arrowHolder);
 
+  // Sliding number (the idea of Motion Primitives' "sliding number", rebuilt in plain SVG): each digit is a column of
+  // 0-9 that rolls to its value inside a one-digit window, like an odometer, so the score rolls up or down to the new one.
+  // The plain <text> stays in the page (hidden here) for visitors without JavaScript or with reduced motion.
+  var LINE = 34, BASE_Y = Number(score.getAttribute('y')) || 210.6;
+  var dw = (function () { var keep = score.textContent; score.textContent = '0'; var w = score.getComputedTextLength(); score.textContent = keep; return w > 4 ? w : 17.5; })();
+  var odo = el('g', { 'font-family': score.getAttribute('font-family'), 'font-size': score.getAttribute('font-size'), 'font-weight': score.getAttribute('font-weight'), 'text-anchor': 'middle', fill: GOLD });
+  score.parentNode.insertBefore(odo, score.nextSibling);
+  score.setAttribute('opacity', 0);
+  var defsEl = svg.querySelector('defs') || el('defs', {}, svg);
+  var cols = [0, 1, 2].map(function (k) {
+    var cp = el('clipPath', { id: 'hs-digit-' + k }, defsEl);
+    el('rect', { x: (-dw / 2 - 1).toFixed(2), y: (200 - LINE / 2).toFixed(2), width: (dw + 2).toFixed(2), height: LINE }, cp);
+    var col = el('g', { 'clip-path': 'url(#hs-digit-' + k + ')' }, odo);
+    var strip = el('g', null, col);
+    for (var d = 0; d <= 10; d++) {
+      var tx = el('text', { x: 0, y: (BASE_Y + d * LINE).toFixed(2), style: 'font-variant-numeric: lining-nums tabular-nums' }, strip);
+      tx.textContent = String(d % 10);
+    }
+    return { col: col, strip: strip };
+  });
+  // Draws the value v (may be fractional while rolling): ones, tens and hundreds columns with odometer carries.
+  function showValue(v) {
+    var ones = v % 10, carry1 = Math.max(0, ones - 9);
+    var tens = (Math.floor(v / 10) % 10) + carry1;
+    var carry2 = Math.max(0, (v % 100) - 99);
+    var hundreds = Math.floor(v / 100) + carry2;
+    var h = clamp(v - 99);                       // the hundreds column fades and widens in between 99 and 100
+    var width = dw * (2 + h), right = 200 + width / 2;
+    var pos = [hundreds, tens, ones], xs = [right - dw * 2.5, right - dw * 1.5, right - dw / 2];
+    cols.forEach(function (c, k) {
+      c.col.setAttribute('transform', 'translate(' + xs[k].toFixed(2) + ' 0)');
+      c.strip.setAttribute('transform', 'translate(0 ' + (-pos[k] * LINE).toFixed(2) + ')');
+    });
+    cols[0].col.setAttribute('opacity', h.toFixed(2));
+    return h;
+  }
+
   // Timing of one round (seconds).
-  var ROUND = 2.8, SEND_A = 0.3, SEND_B = 1.35, ROLL_A = 1.4, ROLL_B = 2.05, FLICK = 0.035;
+  var ROUND = 2.8, SEND_A = 0.3, SEND_B = 1.35, ROLL_A = 1.4, ROLL_B = 2.05;
   function clamp(v) { return v < 0 ? 0 : v > 1 ? 1 : v; }
   function ease(p) { p = clamp(p); return p < 0.5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2; }
   function span(t, a, b) { return clamp((t - a) / (b - a)); }
 
-  var current = Number(score.textContent) || 94, target = current, round = -1, lastFlick = 0;
+  var current = Number(score.textContent) || 94, target = current, round = -1;
 
   function render(time) {
     var n = Math.floor(time / ROUND), t = time - n * ROUND;
@@ -93,12 +130,10 @@
     }
     pulses[from].setAttribute('opacity', 0);
 
-    // The score spins through random values, then settles on the new one.
-    if (t >= ROLL_A && t < ROLL_B) {
-      if (time - lastFlick > FLICK) { score.textContent = rnd(); lastFlick = time; }
-    } else {
-      score.textContent = t >= ROLL_B ? target : current;
-    }
+    // The score rolls, digit by digit, from the old value to the new one, then settles.
+    var shown = t >= ROLL_A ? current + (target - current) * ease(span(t, ROLL_A, ROLL_B)) : current;
+    var wide = showValue(shown);
+    score.textContent = Math.round(shown);
     var pop = t >= ROLL_B ? 1 - span(t, ROLL_B, ROLL_B + 0.35) : 0;
 
     // Trend: shown from the moment the score settles until the next spin starts (the change it shows is target - current
@@ -108,12 +143,12 @@
     else if (t < ROLL_A && n > 0) { dir = trend; show = 1 - span(t, ROLL_A - 0.2, ROLL_A); age = t + ROUND - ROLL_B; }
     if (t >= ROLL_B) trend = dir;
     var col = dir > 0 ? GREEN : dir < 0 ? RED : GOLD;
-    score.setAttribute('fill', show > 0.5 ? col : GOLD);
+    odo.setAttribute('fill', show > 0.5 ? col : GOLD);
     scoreRing.setAttribute('stroke', show > 0.5 ? col : GOLD);
     arrowHolder.setAttribute('opacity', show.toFixed(2));
     // The number shifts left while the arrow shows, and pops a little when it settles.
-    var shift = (String(score.textContent).length > 2 ? -12 : -9) * ease(show);
-    score.setAttribute('transform', 'translate(' + (200 + shift).toFixed(2) + ' 200) scale(' + (1 + 0.12 * pop).toFixed(3) + ') translate(-200 -200)');
+    var shift = (-9 - 3 * wide) * ease(show);
+    odo.setAttribute('transform', 'translate(' + (200 + shift).toFixed(2) + ' 200) scale(' + (1 + 0.12 * pop).toFixed(3) + ') translate(-200 -200)');
     if (dir) {
       arrow.setAttribute('fill', col);
       // Slides in along its direction, then keeps nudging that way.

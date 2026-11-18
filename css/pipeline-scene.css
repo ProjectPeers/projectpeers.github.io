@@ -26,8 +26,17 @@
 
 /* The scene and its toolbar sit in one panel, like a product screen with its controls. */
 .belt-panel {
+  position: relative;
   background: var(--surface); border: 1px solid var(--line); border-radius: 20px; padding: .75rem;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, .04);
+}
+
+/* Border trail (js/site-motion.js): a short gold light runs around the panel's edge while the walkthrough plays. */
+.belt-trail { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; opacity: 0; }
+.belt-trail rect {
+  fill: none; stroke: var(--gold); stroke-width: 2; stroke-linecap: round;
+  stroke-dasharray: 9 91; stroke-dashoffset: 0;
+  filter: drop-shadow(0 0 4px rgba(253, 187, 48, .8));
 }
 
 /* Controls: a toolbar strip under the scene */
