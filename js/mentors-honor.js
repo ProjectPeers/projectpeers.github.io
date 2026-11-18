@@ -1,7 +1,10 @@
 /* Mentors: a quiet tribute when the section comes into view.
    - A gold laurel wreath grows leaf by leaf around each monogram, its stems drawing up from the bottom.
    - The monogram settles in, then its ring keeps a slow, soft glow (CSS, .is-honored).
-   - A band of light sweeps across each card now and then.
+   - Then a gentle, continuous shimmer: one soft band of light sweeps left to right across both cards,
+     as if they were one surface, and each card has a spark circling its gold ring and glints on its
+     laurel leaves. The sponsor's are warm gold (a clockwise spark, leaves twinkling at random); the
+     advisor's are cool silver (an anticlockwise spark, a glint climbing both branches). Paused off screen.
    - The two quotes appear word by word, and each name below them opens out into place.
    GSAP + ScrollTrigger + SplitText (already on the page). Decorative only: the wreath and shine are
    aria-hidden, and with reduced motion the wreath is simply shown in full. */
@@ -48,14 +51,19 @@
     });
     var tip = pt(R, 90);
     node('circle', { class: 'laurel-knot', cx: tip[0].toFixed(2), cy: tip[1].toFixed(2), r: 2.6 }, svg);
+    // a spark that circles the gold ring (radius 42 in these units is the ring's edge)
+    var orbit = node('g', { class: 'laurel-orbit', opacity: 0 }, svg);
+    var halo = node('circle', { cx: 0, cy: -42, r: 6, opacity: 0.45 }, orbit);
+    var spark = node('circle', { cx: 0, cy: -42, r: 2.8 }, orbit);
     mark.appendChild(svg);
-    return { stems: stems, leaves: leaves };
+    return { svg: svg, stems: stems, leaves: leaves, orbit: orbit, halo: halo, spark: spark };
   }
 
   var built = marks.map(wreath);
   var cards = Array.prototype.slice.call(section.querySelectorAll('.mentor'));
   cards.forEach(function (c) {
     var s = document.createElement('span'); s.className = 'mentor-shine'; s.setAttribute('aria-hidden', 'true'); c.appendChild(s);
+    var t = document.createElement('span'); t.className = 'mentor-trail'; t.setAttribute('aria-hidden', 'true'); c.appendChild(t);
   });
 
   if (reduce || !window.gsap || !window.ScrollTrigger) {
@@ -100,7 +108,6 @@
     }
   });
   tl.add(function () { cards.forEach(function (c) { c.classList.add('is-honored'); }); }, 1.6);
-  tl.fromTo(section.querySelectorAll('.mentor-shine'), { xPercent: -120 }, { xPercent: 260, duration: 1.4, ease: 'power2.inOut', stagger: 0.2 }, 1.7);
 
   ScrollTrigger.create({ trigger: section.querySelector('.mentors'), start: 'top 75%', once: true, onEnter: function () { tl.play(); } });
 
@@ -114,12 +121,75 @@
     ScrollTrigger.create({ trigger: quote, start: 'top 82%', once: true, onEnter: function () { qt.play(); } });
   }
 
-  // A light sweep across the cards every so often while the section is on screen.
-  var sweep = gsap.timeline({ paused: true, repeat: -1, repeatDelay: 6, delay: 6 });
-  sweep.fromTo(section.querySelectorAll('.mentor-shine'), { xPercent: -120 }, { xPercent: 260, duration: 1.6, ease: 'power2.inOut', stagger: 0.25 });
+  // Continuous shimmer. One soft band of light travels left to right across BOTH cards as if they were
+  // one surface: it leaves the first card and carries on over the second. The sparks and glints differ
+  // per card (index 0: sponsor, 1: advisor).
+  var MOODS = [
+    { orbit: 8, spin: 1, spark: '#ffe7a3', glint: '#fff4d1', mode: 'twinkle' },
+    { orbit: 11, spin: -1, spark: '#dce9ff', glint: '#eef5ff', mode: 'climb' }
+  ];
+  var loops = [], twinkling = [];
+  var shines = cards.map(function (c) { return c.querySelector('.mentor-shine'); });
+  shines.forEach(function (sh) {
+    // a wide, soft band that fades in and out smoothly: like light passing over a glossy surface
+    sh.style.background = 'linear-gradient(90deg, transparent 0%, rgba(255, 244, 220, .08) 25%, rgba(255, 248, 232, .15) 50%, rgba(255, 244, 220, .08) 75%, transparent 100%)';
+    gsap.set(sh, { skewX: -14, xPercent: 0, x: -2000 });
+  });
+  // the band's position along the row of cards (px from the first card's left edge); each card shows it
+  // at its own offset, and its overflow clips it, so the band seems to pass from one card to the next
+  var beam = { x: 0 };
+  function placeBeam() {
+    var first = cards[0].getBoundingClientRect().left;
+    cards.forEach(function (c, k) { gsap.set(shines[k], { x: beam.x - (c.getBoundingClientRect().left - first) }); });
+  }
+  var span = function () {
+    var a = cards[0].getBoundingClientRect(), b = cards[cards.length - 1].getBoundingClientRect();
+    return { from: -shines[0].offsetWidth * 1.4, to: (b.right - a.left) + shines[0].offsetWidth * 0.4 };
+  };
+  var sweep = gsap.timeline({ paused: true, repeat: -1, repeatDelay: 2.2, repeatRefresh: true });
+  sweep.fromTo(beam, { x: function () { return span().from; } }, { x: function () { return span().to; }, duration: 5.5, ease: 'sine.inOut', onUpdate: placeBeam });
+  loops.push(sweep);
+  cards.forEach(function (card, k) {
+    var m = MOODS[k % MOODS.length], w = built[k];
+    // the spark circles the ring
+    w.spark.setAttribute('fill', '#ffffff'); w.halo.setAttribute('fill', m.spark);
+    w.orbit.style.filter = 'drop-shadow(0 0 3px ' + m.spark + ') drop-shadow(0 0 7px ' + m.spark + ')';
+    loops.push(gsap.to(w.orbit, { rotation: 360 * m.spin, svgOrigin: '0 0', duration: m.orbit, ease: 'none', repeat: -1, paused: true }));
+    loops.push(gsap.to(w.halo, { attr: { r: 7.5 }, opacity: 0.15, duration: 1.1, yoyo: true, repeat: -1, ease: 'sine.inOut', paused: true }));
+    // glints on the leaves
+    var leafEls = w.leaves.map(function (l) { return l.el; });
+    function flash(el, at, tl) {
+      (tl || gsap).to(el, { fill: m.glint, duration: 0.2, yoyo: true, repeat: 1, ease: 'sine.inOut' }, at);
+    }
+    if (m.mode === 'climb') {
+      var climb = gsap.timeline({ paused: true, repeat: -1, repeatDelay: 1.6 });
+      for (var i = 0; i < 11; i++) {
+        flash(w.leaves.filter(function (l) { return l.i === i; }).map(function (l) { return l.el; }), i * 0.09, climb);
+      }
+      loops.push(climb);
+    } else {
+      twinkling.push(function () { flash(leafEls[Math.floor(Math.random() * leafEls.length)]); });
+    }
+  });
+  // random twinkles run on a timer of their own, at an uneven pace
+  var twinkleOn = false;
+  function twinkle() {
+    if (!twinkleOn) return;
+    twinkling.forEach(function (f) { f(); });
+    gsap.delayedCall(0.35 + Math.random() * 0.5, twinkle);
+  }
+  function setLive(on) {
+    loops.forEach(function (t) { if (on) t.play(); else t.pause(); });
+    if (on && !twinkleOn) { twinkleOn = true; twinkle(); }
+    if (!on) twinkleOn = false;
+  }
+  var inView = false;
   ScrollTrigger.create({
     trigger: section, start: 'top bottom', end: 'bottom top',
-    onToggle: function (self) { if (self.isActive && tl.progress() === 1) sweep.play(); else sweep.pause(); }
+    onToggle: function (self) { inView = self.isActive; if (tl.progress() === 1) setLive(inView); }
   });
-  tl.eventCallback('onComplete', function () { sweep.play(); });
+  tl.eventCallback('onComplete', function () {
+    built.forEach(function (w) { gsap.to(w.orbit, { opacity: 1, duration: 0.6 }); });
+    setLive(inView);
+  });
 })();
