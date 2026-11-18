@@ -539,6 +539,7 @@
     if (t >= 13.85 && t < 14.6) { s = 12 + 3 * prog(t, 13.85, 14.5); }
     if (t >= 21.95 && t < 22.6) { s = 24 + 3 * prog(t, 21.95, 22.55); }
     var p = along(s), q = iso(p[0], p[1], BELT_Z);
+    orderBarrier(p);
     mainPkg.g.setAttribute('transform', 'translate(' + q[0].toFixed(1) + ' ' + q[1].toFixed(1) + ') scale(' + (t < 3.5 ? pop : 1).toFixed(3) + ')');
     setOpacity(mainPkg.g, visible ? 1 : 0);
     setOpacity(mainPkg.halo, 0.6 + 0.4 * Math.sin(amb * 4));
@@ -596,6 +597,19 @@
       var age = amb - idleStart;
       idle(age, amb, t >= DURATION - 0.05 && !reduceMotion ? clamp(age / 0.8, 0, 1) : 1);
     }
+  }
+
+  // Drawing order at the quality gate. The barrier's post stands on the near side of the belt, so it covers the
+  // package until the package has passed it; after that the package is nearer the viewer and is drawn over it.
+  // In this projection a larger x + y is nearer the viewer; the post stands at (11.02, -4.8).
+  var BARRIER_DEPTH = 11.02 - 4.8 + 0.35, barrierOnTop = null;
+  function orderBarrier(pos) {
+    var onTop = pos[0] + pos[1] < BARRIER_DEPTH;
+    if (onTop === barrierOnTop) return;
+    barrierOnTop = onTop;
+    var bg = arm.parentNode;
+    // Just above or just below the package, so the ghost and the rocket keep their own places.
+    if (onTop) gFront.insertBefore(bg, mainPkg.g.nextSibling); else gFront.insertBefore(bg, mainPkg.g);
   }
 
   function arcPoint(a, p) { var L = a.path.getTotalLength(); return a.path.getPointAtLength(L * clamp(p, 0, 1)); }
@@ -722,6 +736,7 @@
     var vis = u >= 0.3 && u < hideAt ? 1 : 0;
     if (ok) vis *= 1 - prog(u, 20.4, 20.9);
     var w = along(s), q = iso(w[0], w[1], BELT_Z);
+    orderBarrier(w);
     mainPkg.g.setAttribute('transform', 'translate(' + q[0].toFixed(1) + ' ' + q[1].toFixed(1) + ') scale(' + prog(u, 0.3, 0.6).toFixed(3) + ')');
     setOpacity(mainPkg.g, vis);
     setOpacity(mainPkg.tint, gf ? on(u, 8.9, 10.8, 0.2) : sf ? on(u, 15.6, 16.5, 0.2) : 0);
