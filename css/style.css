@@ -102,8 +102,7 @@ main :focus-visible { outline-color: var(--link); }
 .section { padding: clamp(2.5rem, 7vw, 5rem) 0; }
 .section-alt { background: var(--bg-alt); }
 .lead { font-size: 1.2rem; color: var(--muted); max-width: 44rem; margin-bottom: 2rem; }
-.note, .credit, .thanks { color: var(--muted); max-width: 46rem; }
-.credit { margin-top: 2rem; padding: 1rem 1.25rem; border-left: 4px solid var(--navy-3); background: var(--bg-alt); border-radius: 0 var(--radius) var(--radius) 0; }
+.note, .thanks { color: var(--muted); max-width: 46rem; }
 .thanks { margin: 2rem 0 0; }
 
 /* Cards */
@@ -151,6 +150,9 @@ main :focus-visible { outline-color: var(--link); }
 .site-footer { background: var(--navy); color: #dbe6f2; padding: 2rem 0; text-align: center; }
 .site-footer p { margin: 0 0 .3rem; }
 .footer-small { font-size: .875rem; color: #a9bdd3; }
+.footer-credit { max-width: 46rem; margin: .75rem auto 1rem; font-size: .9rem; color: #c6d5e5; }
+.footer-credit strong { color: #fff; }
+.footer-credit a { color: var(--gold); }
 
 /* Tablet and phone */
 @media (max-width: 900px) {

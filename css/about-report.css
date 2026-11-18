@@ -66,8 +66,6 @@
 .mock-quote::after { content: "\201D"; }
 .mock-from { margin: 0; font-size: .8rem; color: var(--muted); }
 
-/* The credit note reads as a footnote. */
-.credit { margin-top: 2.5rem; padding: .6rem 1rem; font-size: .95rem; background: none; border-left-width: 3px; }
 
 @media (max-width: 900px) {
   .about-grid { grid-template-columns: 1fr; }
