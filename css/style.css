@@ -217,7 +217,7 @@ p { margin: 0 0 1rem; }
 /* Mentors: the sponsor and the advisor, as two featured cards with a gold edge and a large ringed monogram. */
 .mentors { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; }
 .mentor {
-  position: relative; display: grid; grid-template-columns: 5.5rem 1fr; gap: 1.5rem; align-items: start;
+  position: relative; display: grid; grid-template-columns: 5.5rem 1fr; gap: 2.4rem; align-items: start;
   padding: 2rem; border-radius: 16px; overflow: hidden;
   background:
     radial-gradient(420px 220px at 0% 0%, rgba(253, 187, 48, .10), transparent 70%),
@@ -230,6 +230,23 @@ p { margin: 0 0 1rem; }
   display: grid; place-items: center; width: 5.5rem; height: 5.5rem; border-radius: 50%;
   background: var(--navy); color: var(--gold); font-family: var(--serif); font-size: 1.9rem; letter-spacing: .04em;
   border: 2px solid var(--gold); box-shadow: 0 0 0 6px rgba(253, 187, 48, .08), 0 0 28px rgba(253, 187, 48, .18);
+}
+/* Tribute (js/mentors-honor.js): a laurel wreath grows round each monogram, the ring then keeps a slow glow,
+   and a band of light sweeps across the card now and then. */
+.mentor-mark { position: relative; }
+.mentor-initials { display: block; }
+.laurel { position: absolute; inset: -30%; width: 160%; height: 160%; max-width: none; overflow: visible; pointer-events: none; }   /* max-width: the site caps svg at 100% */
+.laurel-stem { fill: none; stroke: var(--gold); stroke-width: 1.1; stroke-linecap: round; opacity: .75; }
+.laurel-leaf { fill: var(--gold); stroke: #b8841a; stroke-width: .5; }
+.laurel-knot { fill: var(--gold); }
+.mentor.is-honored .mentor-mark { animation: honor-glow 4.5s ease-in-out infinite; }
+@keyframes honor-glow {
+  0%, 100% { box-shadow: 0 0 0 6px rgba(253, 187, 48, .08), 0 0 28px rgba(253, 187, 48, .18); }
+  50% { box-shadow: 0 0 0 6px rgba(253, 187, 48, .14), 0 0 42px rgba(253, 187, 48, .38); }
+}
+.mentor-shine {
+  position: absolute; top: -20%; bottom: -20%; left: 0; width: 35%; pointer-events: none; transform: translateX(-120%) skewX(-18deg);
+  background: linear-gradient(90deg, transparent, rgba(255, 214, 120, .055), transparent);
 }
 .mentor-role { font-family: var(--mono); font-size: .76rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--gold); margin: .35rem 0 .45rem; }
 .mentor h3 { font-size: 1.45rem; letter-spacing: -.015em; margin-bottom: .65rem; }
