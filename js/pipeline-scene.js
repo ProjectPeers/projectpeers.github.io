@@ -558,8 +558,8 @@
     el('circle', { cx: led[0], cy: led[1], r: 1.6, fill: '#3ddc84' }, jb);
   })();
   var crew = [
-    // standing on the giant laptop's keyboard with his back to us, reviewing the code on its screen with a magnifying glass
-    engineer(-1.35, -2.55, 0.83, 'look', { skin: '#e0ac85', hat: '#fdbb30', hair: '#4a2e1a', back: true, scale: 0.62 }),
+    // standing on the desk in front of the giant laptop, his back to us, reviewing the code on its screen with a magnifying glass
+    engineer(-1.35, -1.65, 0.75, 'look', { skin: '#e0ac85', hat: '#fdbb30', hair: '#4a2e1a', back: true, scale: 0.95 }),
     // at the quality gate, checking the checks on an iPad
     engineer(8.4, -3.5, 0, 'tablet', { skin: '#f1c7a3', hat: '#ffffff', female: true, hair: '#6b3e1e' }),
     // walking along the first belt with a wrench
@@ -600,13 +600,15 @@
         c.armF.setAttribute('transform', 'translate(5 -30) rotate(' + (-70 + squeeze * 6).toFixed(1) + ')');
         c.head.setAttribute('transform', 'rotate(10 0 -33)');
       } else if (c.pose === 'look') {
-        // sweeps the magnifying glass slowly across the screen
-        var sweep = Math.sin(a * 0.9);
-        c.armF.setAttribute('transform', 'translate(5 -30) rotate(' + (-138 + sweep * 10).toFixed(1) + ')');
-        c.head.setAttribute('transform', 'rotate(' + (-6 + sweep * 4).toFixed(2) + ' 0 -33)');
+        // waves the magnifying glass briskly back and forth across the screen
+        var sweep = Math.sin(a * 3.2);
+        c.armF.setAttribute('transform', 'translate(5 -30) rotate(' + (-138 + sweep * 16).toFixed(1) + ')');
+        c.head.setAttribute('transform', 'rotate(' + (-6 + sweep * 5).toFixed(2) + ' 0 -33)');
       } else if (c.pose === 'radio') {
-        c.signal.setAttribute('opacity', (0.5 + 0.5 * Math.sin(a * 6)).toFixed(2));
-        c.head.setAttribute('transform', 'rotate(' + (Math.sin(a * 2.2) * 3).toFixed(2) + ' 0 -33)');
+        // waves the walkie-talkie quickly while calling the launch
+        c.signal.setAttribute('opacity', (0.5 + 0.5 * Math.sin(a * 8)).toFixed(2));
+        c.armF.setAttribute('transform', 'translate(5 -30) rotate(' + (-160 + Math.sin(a * 5) * 14).toFixed(1) + ')');
+        c.head.setAttribute('transform', 'rotate(' + (Math.sin(a * 3.4) * 4).toFixed(2) + ' 0 -33)');
       }
     });
   }
