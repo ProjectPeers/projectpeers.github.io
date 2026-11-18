@@ -9,6 +9,7 @@
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/pipeline-scene.css">
+  <link rel="stylesheet" href="css/about-report.css">
   <script>document.documentElement.classList.add('js');</script>
 </head>
 <body>
@@ -98,28 +99,84 @@
     <!-- ABOUT -->
     <section class="section" id="about" aria-labelledby="about-title">
       <div class="container">
-        <h2 id="about-title">What PEERS does</h2>
-        <p class="lead">
-          Professors use PEERS to collect honest feedback from the members of a team, then review it
-          in one place.
-        </p>
-        <ul class="cards cards-3">
-          <li class="card">
-            <svg class="card-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M16 11a3 3 0 1 0-3-3 3 3 0 0 0 3 3Zm-8 0a3 3 0 1 0-3-3 3 3 0 0 0 3 3Zm0 2c-2.3 0-7 1.2-7 3.5V19h14v-2.5C15 14.2 10.3 13 8 13Zm8 0c-.3 0-.6 0-1 .1 1.2.8 2 1.9 2 3.4V19h6v-2.5c0-2.3-4.700-3.500-7-3.500Z" fill="currentColor"/></svg>
-            <h3>Rosters and teams</h3>
-            <p>Professors create courses, manage student rosters and assign students to teams.</p>
-          </li>
-          <li class="card">
-            <svg class="card-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3.500 7 8.500 6.500L20.500 7"/></g></svg>
-            <h3>Email invitations</h3>
-            <p>Students are invited by email to evaluate their teammates.</p>
-          </li>
-          <li class="card">
-            <svg class="card-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 20V10h4v10H4Zm6 0V4h4v16h-4Zm6 0v-7h4v7h-4Z" fill="currentColor"/></svg>
-            <h3>Reports</h3>
-            <p>Professors receive structured reports with both numeric and written feedback.</p>
-          </li>
-        </ul>
+        <div class="about-grid">
+          <div class="about-copy">
+            <h2 id="about-title">What PEERS does</h2>
+            <p class="lead">
+              Professors use PEERS to collect honest feedback from the members of a team, then review it
+              in one place.
+            </p>
+            <ul class="features">
+              <li>
+                <svg class="card-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M16 11a3 3 0 1 0-3-3 3 3 0 0 0 3 3Zm-8 0a3 3 0 1 0-3-3 3 3 0 0 0 3 3Zm0 2c-2.3 0-7 1.2-7 3.5V19h14v-2.5C15 14.2 10.3 13 8 13Zm8 0c-.3 0-.6 0-1 .1 1.2.8 2 1.9 2 3.4V19h6v-2.5c0-2.3-4.700-3.500-7-3.500Z" fill="currentColor"/></svg>
+                <div>
+                  <h3>Rosters and teams</h3>
+                  <p>Professors create courses, manage student rosters and assign students to teams.</p>
+                </div>
+              </li>
+              <li>
+                <svg class="card-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3.500 7 8.500 6.500L20.500 7"/></g></svg>
+                <div>
+                  <h3>Email invitations</h3>
+                  <p>Students are invited by email to evaluate their teammates.</p>
+                </div>
+              </li>
+              <li>
+                <svg class="card-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 20V10h4v10H4Zm6 0V4h4v16h-4Zm6 0v-7h4v7h-4Z" fill="currentColor"/></svg>
+                <div>
+                  <h3>Reports</h3>
+                  <p>Professors receive structured reports with both numeric and written feedback.</p>
+                </div>
+              </li>
+            </ul>
+          </div>
+
+          <!-- A drawn mock-up of a report (made-up names), not a screenshot. js/about-report.js steps through the rows. -->
+          <figure class="mock">
+            <div class="mock-window" aria-hidden="true">
+              <div class="mock-bar">
+                <span class="mock-dots"><i></i><i></i><i></i></span>
+                <span class="mock-address">PEERS &middot; Reports</span>
+              </div>
+              <div class="mock-body">
+                <div class="mock-head">
+                  <div>
+                    <p class="mock-title">Peer evaluation report</p>
+                    <p class="mock-sub">Sample course &middot; Team 3</p>
+                  </div>
+                  <span class="mock-badge">5 of 5 submitted</span>
+                </div>
+                <ol class="mock-rows">
+                  <li class="is-active" data-comment="Kept us on schedule and reviewed every pull request within a day." data-from="From a teammate">
+                    <span class="mock-avatar">AM</span><span class="mock-name">Avery M.</span>
+                    <span class="mock-stars" style="--r: 4.8"></span><span class="mock-score">96</span>
+                  </li>
+                  <li data-comment="Wrote most of the tests and explained them to the rest of the team." data-from="From a teammate">
+                    <span class="mock-avatar">JP</span><span class="mock-name">Jordan P.</span>
+                    <span class="mock-stars" style="--r: 4.6"></span><span class="mock-score">93</span>
+                  </li>
+                  <li data-comment="Great ideas in meetings; could share progress a little earlier." data-from="From a teammate">
+                    <span class="mock-avatar">RK</span><span class="mock-name">Riley K.</span>
+                    <span class="mock-stars" style="--r: 4.2"></span><span class="mock-score">88</span>
+                  </li>
+                  <li data-comment="Always ready to help debug, even outside our part of the project." data-from="From a teammate">
+                    <span class="mock-avatar">ST</span><span class="mock-name">Sam T.</span>
+                    <span class="mock-stars" style="--r: 4.7"></span><span class="mock-score">95</span>
+                  </li>
+                  <li data-comment="Designed the screens and kept the documentation up to date." data-from="From a teammate">
+                    <span class="mock-avatar">TN</span><span class="mock-name">Taylor N.</span>
+                    <span class="mock-stars" style="--r: 4.4"></span><span class="mock-score">91</span>
+                  </li>
+                </ol>
+                <div class="mock-comment">
+                  <p class="mock-quote">Kept us on schedule and reviewed every pull request within a day.</p>
+                  <p class="mock-from">From a teammate</p>
+                </div>
+              </div>
+            </div>
+            <figcaption>An illustration of a PEERS report: ratings, a score and written comments for each student. Names and numbers are made up.</figcaption>
+          </figure>
+        </div>
         <p class="credit">
           <strong>Credit where it is due:</strong> PEERS is a continuation of an earlier KSU senior
           capstone project, and the application itself was built by that team
@@ -327,6 +384,7 @@
 
   <script src="js/main.js"></script>
   <script src="js/hero-peers.js"></script>
+  <script src="js/about-report.js"></script>
   <script src="js/pipeline-scene.js"></script>
 </body>
 </html>

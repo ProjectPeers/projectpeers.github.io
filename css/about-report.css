@@ -1,0 +1,83 @@
+/* About section: feature list beside a drawn mock-up of a PEERS report (js/about-report.js steps through its rows). */
+.about-grid { display: grid; grid-template-columns: 1fr 1.05fr; gap: clamp(1.5rem, 4vw, 3.5rem); align-items: center; }
+.about-copy .lead { margin-bottom: 1.5rem; }
+
+.features { display: grid; gap: 1.1rem; }
+.features li { display: grid; grid-template-columns: 2.75rem 1fr; gap: .9rem; align-items: start; }
+.features .card-icon {
+  width: 2.75rem; height: 2.75rem; padding: .55rem; margin: 0;
+  background: var(--navy); color: var(--gold); border-radius: 10px;
+}
+.features h3 { margin-bottom: .15rem; }
+.features p { margin: 0; color: var(--muted); }
+
+/* The mock-up */
+.mock { margin: 0; }
+.mock figcaption { color: var(--muted); font-size: .85rem; margin-top: .6rem; text-align: center; }
+.mock-window {
+  border: 1px solid var(--line); border-radius: 14px; overflow: hidden; background: #fff;
+  box-shadow: 0 18px 40px -18px rgba(11, 27, 46, .35), 0 2px 6px rgba(11, 27, 46, .06);
+}
+.mock-bar { display: flex; align-items: center; gap: .8rem; padding: .6rem .9rem; background: var(--navy); }
+.mock-dots { display: inline-flex; gap: .35rem; }
+.mock-dots i { width: .6rem; height: .6rem; border-radius: 50%; background: #3a5068; }
+.mock-dots i:first-child { background: var(--gold); }
+.mock-address { flex: 1; text-align: center; font-size: .8rem; color: #c9d7e6; background: rgba(255, 255, 255, .08); border-radius: 6px; padding: .2rem .6rem; margin-right: 2.4rem; }
+
+.mock-body { padding: 1rem 1.1rem 1.1rem; }
+.mock-head { display: flex; justify-content: space-between; align-items: flex-start; gap: .75rem; margin-bottom: .75rem; }
+.mock-title { font-weight: 700; margin: 0; }
+.mock-sub { margin: 0; font-size: .85rem; color: var(--muted); }
+.mock-badge { flex: none; font-size: .78rem; font-weight: 700; color: #17633a; background: #e3f5ea; border-radius: 999px; padding: .2rem .65rem; }
+
+.mock-rows li {
+  display: grid; grid-template-columns: 2rem 1fr auto 2.6rem; align-items: center; gap: .7rem;
+  padding: .45rem .6rem; border-radius: 8px; border-left: 3px solid transparent;
+  transition: background-color .35s ease, border-color .35s ease;
+}
+.mock-rows li + li { margin-top: .15rem; }
+.mock-rows li.is-active { background: #fff6df; border-left-color: var(--gold); }
+.mock-avatar {
+  display: grid; place-items: center; width: 2rem; height: 2rem; border-radius: 50%;
+  background: var(--navy); color: var(--gold); font-size: .7rem; font-weight: 700; letter-spacing: .03em;
+}
+.mock-name { font-size: .95rem; }
+.mock-stars { position: relative; display: inline-block; font-size: .95rem; letter-spacing: .08em; line-height: 1; color: #d9dee6; }
+.mock-stars::before { content: "\2605\2605\2605\2605\2605"; }
+.mock-stars::after {
+  content: "\2605\2605\2605\2605\2605"; position: absolute; left: 0; top: 0; overflow: hidden; white-space: nowrap;
+  width: calc(var(--r) / 5 * 100%); color: #e0a100;
+}
+.mock-score {
+  text-align: center; font-weight: 700; font-size: .9rem; font-variant-numeric: tabular-nums;
+  border-radius: 6px; padding: .15rem 0; background: var(--bg-alt); color: var(--ink);
+  transition: background-color .35s ease, color .35s ease;
+}
+.mock-rows li.is-active .mock-score { background: var(--navy); color: var(--gold); }
+
+.mock-comment {
+  margin-top: .8rem; padding: .75rem .9rem; border-radius: 10px; background: var(--bg-alt);
+  border-left: 3px solid var(--navy-3); min-height: 4.6rem;
+  transition: opacity .3s ease, transform .3s ease;
+}
+.mock-comment.is-changing { opacity: 0; transform: translateY(4px); }
+.mock-quote { margin: 0 0 .2rem; font-style: italic; }
+.mock-quote::before { content: "\201C"; }
+.mock-quote::after { content: "\201D"; }
+.mock-from { margin: 0; font-size: .8rem; color: var(--muted); }
+
+/* The credit note reads as a footnote. */
+.credit { margin-top: 2.5rem; padding: .6rem 1rem; font-size: .95rem; background: none; border-left-width: 3px; }
+
+@media (max-width: 900px) {
+  .about-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 420px) {
+  .mock-body { padding: .8rem; }
+  .mock-rows li { grid-template-columns: 1.8rem 1fr auto 2.4rem; gap: .5rem; padding: .4rem .45rem; }
+  .mock-stars { font-size: .8rem; }
+}
+@media (forced-colors: active) {
+  .mock-window { border: 2px solid CanvasText; }
+  .mock-rows li.is-active { border-left-color: Highlight; }
+}
