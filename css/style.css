@@ -164,6 +164,44 @@ p { margin: 0 0 1rem; }
 }
 .role { font-family: var(--mono); color: var(--subtle); font-weight: 500; font-size: .74rem; letter-spacing: .06em; text-transform: uppercase; margin-bottom: .8rem; }
 .person p:last-child { font-size: .95rem; color: var(--muted); text-align: left; }
+/* Interactive team cards: only the name and role show; selecting a card reveals the detail
+   (js/team-reveal.js) and dims the others. Without JS the detail simply shows. */
+.cards-team { align-items: flex-start; }
+.person { position: relative; overflow: hidden; isolation: isolate;
+  transition: opacity .45s ease, filter .45s ease, transform .45s ease, border-color .3s, box-shadow .3s, background-color .3s; }
+.person h3 { margin-bottom: .35rem; }
+.person-toggle { all: unset; cursor: pointer; font: inherit; color: inherit; }
+.person-toggle::after { content: ""; position: absolute; inset: 0; border-radius: inherit; z-index: 2; }
+.person-toggle:focus-visible { outline: none; }
+.person:has(.person-toggle:focus-visible) { outline: 3px solid var(--gold); outline-offset: 3px; }
+.person .role { margin-bottom: 0; }
+.person-detail p { margin: 1rem 0 0; font-size: .95rem; color: var(--muted); text-align: left; }
+.js .person-detail { display: none; }
+.js .person.is-open .person-detail { display: block; }
+.js .person::before { content: "+"; position: absolute; top: .85rem; right: 1rem; font-family: var(--mono); font-size: 1.1rem; color: var(--subtle); transition: transform .35s ease, color .2s; }
+.js .person:hover::before { color: var(--gold); }
+.js .person.is-open::before { transform: rotate(45deg); color: var(--gold); }
+.js .person:hover { border-color: var(--line-strong); background: var(--surface-2); }
+.person.is-open { z-index: 3; border-color: rgba(253, 187, 48, .55); background: radial-gradient(120% 90% at 50% 0%, #182c47 0%, var(--surface) 70%);
+  box-shadow: 0 0 0 1px rgba(253, 187, 48, .15), 0 18px 50px -12px rgba(253, 187, 48, .25); }
+.person.is-open .avatar { border-color: var(--gold); box-shadow: 0 0 22px rgba(253, 187, 48, .35); }
+.avatar { transition: border-color .3s, box-shadow .3s; }
+.cards-team.has-open > .person:not(.is-open) { opacity: .32; filter: grayscale(1) blur(.5px); transform: scale(.97); }
+.cards-team.has-open > .person:not(.is-open):hover { opacity: .55; }
+.person-hint { position: relative; z-index: 1; display: inline-flex; align-items: center; gap: .5rem; margin-top: 1rem;
+  padding: .3rem .75rem; border: 1px solid rgba(253, 187, 48, .35); border-radius: 999px;
+  font-family: var(--mono); font-size: .7rem; letter-spacing: .08em; text-transform: uppercase; color: var(--gold);
+  transition: background-color .2s, border-color .2s; }
+.person-hint-dot { width: .45rem; height: .45rem; border-radius: 50%; background: var(--gold); box-shadow: 0 0 0 0 rgba(253, 187, 48, .6); animation: hint-pulse 2s ease-out infinite; }
+@keyframes hint-pulse { 0% { box-shadow: 0 0 0 0 rgba(253, 187, 48, .6); } 70%, 100% { box-shadow: 0 0 0 .55rem rgba(253, 187, 48, 0); } }
+.person:hover .person-hint { background: rgba(253, 187, 48, .1); border-color: var(--gold); }
+.person.is-open .person-hint { display: none; }
+@media (prefers-reduced-motion: reduce) { .person-hint-dot { animation: none; } }
+.person-dust { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; }
+.person > .avatar, .person > .role, .person > .person-detail { position: relative; z-index: 1; }
+@media (prefers-reduced-motion: reduce) {
+  .person, .js .person::before { transition: none; }
+}
 
 /* Mentors: the sponsor and the advisor, as two featured cards with a gold edge and a large ringed monogram. */
 .mentors { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; }

@@ -335,33 +335,33 @@
         <ul class="cards cards-team">
           <li class="card person">
             <span class="avatar" aria-hidden="true">KH</span>
-            <h3>Khoa Ho</h3>
+            <h3><button type="button" class="person-toggle" aria-expanded="false" aria-controls="role-kh">Khoa Ho</button></h3>
             <p class="role">Team Leader</p>
-            <p>Frontend unit and integration tests, the end-to-end student workflow, automated test reporting and the design of the team's website.</p>
+            <div class="person-detail" id="role-kh"><p>Frontend unit and integration tests, the end-to-end student workflow, automated test reporting and the design of the team's website.</p></div>
           </li>
           <li class="card person">
             <span class="avatar" aria-hidden="true">DG</span>
-            <h3>Donald Gobin</h3>
+            <h3><button type="button" class="person-toggle" aria-expanded="false" aria-controls="role-dg">Donald Gobin</button></h3>
             <p class="role">CI/CD Architecture</p>
-            <p>CI/CD design, branch governance, the CI and CD pipelines, release procedures and final repository delivery.</p>
+            <div class="person-detail" id="role-dg"><p>CI/CD design, branch governance, the CI and CD pipelines, release procedures and final repository delivery.</p></div>
           </li>
           <li class="card person">
             <span class="avatar" aria-hidden="true">AS</span>
-            <h3>Aaron Simpson</h3>
+            <h3><button type="button" class="person-toggle" aria-expanded="false" aria-controls="role-as">Aaron Simpson</button></h3>
             <p class="role">Containers &amp; Delivery</p>
-            <p>Development environment, Docker and Docker Compose, image builds, staging deployment and build reporting.</p>
+            <div class="person-detail" id="role-as"><p>Development environment, Docker and Docker Compose, image builds, staging deployment and build reporting.</p></div>
           </li>
           <li class="card person">
             <span class="avatar" aria-hidden="true">LN</span>
-            <h3>Laeticia Neno Aloyem</h3>
+            <h3><button type="button" class="person-toggle" aria-expanded="false" aria-controls="role-ln">Laeticia Neno Aloyem</button></h3>
             <p class="role">Requirements &amp; Security</p>
-            <p>Requirements validation and traceability, security scanning, and the assessment, testing and architecture documents.</p>
+            <div class="person-detail" id="role-ln"><p>Requirements validation and traceability, security scanning, and the assessment, testing and architecture documents.</p></div>
           </li>
           <li class="card person">
             <span class="avatar" aria-hidden="true">KG</span>
-            <h3>Kylee Gipson</h3>
+            <h3><button type="button" class="person-toggle" aria-expanded="false" aria-controls="role-kg">Kylee Gipson</button></h3>
             <p class="role">Backend &amp; Smoke Tests</p>
-            <p>Backend unit and integration tests, functional regression tests, the end-to-end instructor workflow and post-deploy smoke tests.</p>
+            <div class="person-detail" id="role-kg"><p>Backend unit and integration tests, functional regression tests, the end-to-end instructor workflow and post-deploy smoke tests.</p></div>
           </li>
         </ul>
       </div>
@@ -448,5 +448,6 @@
   <script src="js/pipeline-scene.js"></script>
   <script src="js/site-motion.js"></script>
   <script src="js/project-runner.js"></script>
+  <script src="js/team-reveal.js"></script>
 </body>
 </html>
