@@ -199,16 +199,8 @@
           The focus is not new features. It is turning the inherited app into a professionally
           engineered product.
         </p>
-        <!-- The goals shown as a CI test run (js/project-runner.js plays it once when it scrolls into view; Re-run replays it). -->
+        <!-- The goals shown as a CI test run (js/project-runner.js plays it once when it first scrolls into view). -->
         <div class="runner">
-          <div class="runner-bar">
-            <span class="runner-dots" aria-hidden="true"><i></i><i></i><i></i></span>
-            <span class="runner-title" aria-hidden="true">peers &mdash; productionize</span>
-            <button class="runner-rerun" type="button" hidden>
-              <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M8 3a5 5 0 1 1-4.6 3H1.8A6.5 6.5 0 1 0 8 1.5V0L4.8 2.2 8 4.5z" fill="currentColor"/></svg>
-              <span>Re-run</span>
-            </button>
-          </div>
           <div class="runner-body">
             <div>
               <h3>What we set out to do</h3>
@@ -248,7 +240,10 @@
           </div>
           <div class="runner-foot" aria-hidden="true">
             <span class="run-summary"><b>All goals passed</b> &middot; out of scope skipped</span>
-            <span class="run-progress"><i></i></span>
+            <span class="run-meter">
+              <span class="run-track"><span class="run-ticks"></span><span class="run-fill" style="width: 100%"><span class="run-stripes"></span></span><span class="run-head"></span></span>
+              <span class="run-pct">100%</span>
+            </span>
           </div>
         </div>
       </div>
@@ -342,7 +337,7 @@
             <span class="avatar" aria-hidden="true">KH</span>
             <h3>Khoa Ho</h3>
             <p class="role">Team Leader</p>
-            <p>Frontend unit and integration tests, the end-to-end student workflow and automated test reporting.</p>
+            <p>Frontend unit and integration tests, the end-to-end student workflow, automated test reporting and the design of the team's website.</p>
           </li>
           <li class="card person">
             <span class="avatar" aria-hidden="true">DG</span>
