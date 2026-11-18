@@ -351,6 +351,25 @@
   }
   var mainPkg = pkg(gFront), ghost = pkg(gFront);
 
+  // Tunnel hatch on the first belt pad: in the idle loop each change rises out of it from underground.
+  // The package sits in a wrapper so it can be clipped to "above the hole" while it comes up.
+  var HATCH_A = 0.58;
+  var pkgWrap = el('g', null);
+  gFront.insertBefore(pkgWrap, mainPkg.g);
+  pkgWrap.appendChild(mainPkg.g);
+  var hatch = el('g', { opacity: 0, transform: mTop(P[0][0], P[0][1], BELT_Z + 0.03) });
+  gFront.insertBefore(hatch, pkgWrap);
+  var hatchOpen = el('g', null, hatch);
+  el('rect', { x: -HATCH_A, y: -HATCH_A, width: 2 * HATCH_A, height: 2 * HATCH_A, rx: 0.08, fill: '#06070a', stroke: GOLD, 'stroke-width': 0.07 }, hatchOpen);
+  // The shaft's back walls catch a little light, so the hole reads as deep.
+  el('path', { d: 'M' + (-HATCH_A + 0.06) + ' ' + (HATCH_A - 0.06) + ' V' + (-HATCH_A + 0.06) + ' H' + (HATCH_A - 0.06), fill: 'none', stroke: '#2b2f36', 'stroke-width': 0.16 }, hatchOpen);
+  // Clip: everything above the hole's two front edges, so the part of the package still underground is hidden.
+  (function () {
+    var cp = el('clipPath', { id: 'bs-hatch-clip', clipPathUnits: 'userSpaceOnUse' }, defs);
+    var L = iso(P[0][0] - HATCH_A, P[0][1] + HATCH_A, BELT_Z), F = iso(P[0][0] + HATCH_A, P[0][1] + HATCH_A, BELT_Z), R = iso(P[0][0] + HATCH_A, P[0][1] - HATCH_A, BELT_Z);
+    el('polygon', { points: [L, F, R, [R[0], R[1] - 400], [L[0], L[1] - 400]].map(function (q) { return q[0].toFixed(1) + ',' + q[1].toFixed(1); }).join(' ') }, cp);
+  })();
+
   // Red failure paths (screen-space arcs that draw themselves).
   function arc(from, to, lift) {
     var a = iso(from[0], from[1], from[2]), b = iso(to[0], to[1], to[2]);
@@ -540,6 +559,7 @@
     if (t >= 21.95 && t < 22.6) { s = 24 + 3 * prog(t, 21.95, 22.55); }
     var p = along(s), q = iso(p[0], p[1], BELT_Z);
     orderBarrier(p);
+    setOpacity(hatch, 0); pkgWrap.removeAttribute('clip-path');   // the hatch belongs to the idle loop
     mainPkg.g.setAttribute('transform', 'translate(' + q[0].toFixed(1) + ' ' + q[1].toFixed(1) + ') scale(' + (t < 3.5 ? pop : 1).toFixed(3) + ')');
     setOpacity(mainPkg.g, visible ? 1 : 0);
     setOpacity(mainPkg.halo, 0.6 + 0.4 * Math.sin(amb * 4));
@@ -609,7 +629,7 @@
     barrierOnTop = onTop;
     var bg = arm.parentNode;
     // Just above or just below the package, so the ghost and the rocket keep their own places.
-    if (onTop) gFront.insertBefore(bg, mainPkg.g.nextSibling); else gFront.insertBefore(bg, mainPkg.g);
+    if (onTop) gFront.insertBefore(bg, pkgWrap.nextSibling); else gFront.insertBefore(bg, pkgWrap);
   }
 
   function arcPoint(a, p) { var L = a.path.getTotalLength(); return a.path.getPointAtLength(L * clamp(p, 0, 1)); }
@@ -658,7 +678,7 @@
   //   2 'gate':  CI runs, one of the eight required checks fails, the gate stays shut, the change returns to the pull request.
   //   3 'smoke': passes CI and the gate, deploys to staging, a smoke test fails, staging rolls back to the last good release.
   // Belt distances: pull request 3, CI corner 12, gate 15, staging 24, smoke tests 27, production 36, rocket pad 42.6.
-  var ROUTE = [[0.3, 0], [2.0, 3], [3.0, 3], [5.5, 12], [7.6, 12], [8.4, 15]];
+  var ROUTE = [[1.0, 0], [2.3, 3], [3.0, 3], [5.5, 12], [7.6, 12], [8.4, 15]];
   var IDLE = [
     { kind: 'pass', len: 23, path: ROUTE.concat([[10.9, 15], [12.8, 24], [14.2, 24], [15.0, 27], [16.6, 27], [18.6, 36], [19.8, 36], [20.8, 42.6]]) },
     { kind: 'gate', len: 14, path: ROUTE },
@@ -733,11 +753,17 @@
     // The change on the belt.
     var s = keyed(run.path, u)[0];
     var hideAt = gf ? 10.6 : sf ? 16.3 : 99;
-    var vis = u >= 0.3 && u < hideAt ? 1 : 0;
+    var vis = u >= 0.4 && u < hideAt ? 1 : 0;
     if (ok) vis *= 1 - prog(u, 20.4, 20.9);
-    var w = along(s), q = iso(w[0], w[1], BELT_Z);
+    // Out of the tunnel: the hatch opens, the change rises through it, the hatch closes behind it, then it rolls away.
+    var hatchOpenBy = prog(u, 0.1, 0.4) * (1 - prog(u, 1.1, 1.4));
+    setOpacity(hatch, hatchOpenBy > 0.01 ? 1 : 0);
+    hatchOpen.setAttribute('transform', 'scale(' + Math.max(0.001, hatchOpenBy).toFixed(3) + ')');
+    var rise = prog(u, 0.4, 1.0), zoff = -1.05 * (1 - rise);
+    if (u < 1.0) pkgWrap.setAttribute('clip-path', 'url(#bs-hatch-clip)'); else pkgWrap.removeAttribute('clip-path');
+    var w = along(s), q = iso(w[0], w[1], BELT_Z + zoff);
     orderBarrier(w);
-    mainPkg.g.setAttribute('transform', 'translate(' + q[0].toFixed(1) + ' ' + q[1].toFixed(1) + ') scale(' + prog(u, 0.3, 0.6).toFixed(3) + ')');
+    mainPkg.g.setAttribute('transform', 'translate(' + q[0].toFixed(1) + ' ' + q[1].toFixed(1) + ')');
     setOpacity(mainPkg.g, vis);
     setOpacity(mainPkg.tint, gf ? on(u, 8.9, 10.8, 0.2) : sf ? on(u, 15.6, 16.5, 0.2) : 0);
 
