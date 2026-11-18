@@ -1,13 +1,21 @@
-/* Team cards: select a name to reveal that person's work.
+/* Team and mentor cards: select a name to reveal that person's details.
    The detail condenses out of drifting gold "cosmic dust": particles gather on each word,
-   then the word sharpens into view. The other cards dim while one is open. Only one card
-   is open at a time; select it again, press Escape or click outside to close it.
+   then the word sharpens into view. The other cards in the same group dim while one is open.
+   Only one card per group is open at a time; select it again, press Escape or click outside to close it.
    Without JS the detail is always shown; with reduced motion it simply appears. */
 (function () {
   'use strict';
-  var list = document.querySelector('.cards-team');
+  // list: the group; card: one card; mark: where the dust bursts from; hintAfter: the hint goes after this;
+  // float: on wide screens the open card floats over the row below instead of pushing it down.
+  var GROUPS = [
+    { list: '.cards-team', card: '.person', mark: '.avatar', hintAfter: '.role', float: true },
+    { list: '.mentors', card: '.mentor', mark: '.mentor-mark', hintAfter: '.mentor-org', float: false }
+  ];
+  GROUPS.forEach(setup);
+  function setup(cfg) {
+  var list = document.querySelector(cfg.list);
   if (!list) return;
-  var cards = Array.prototype.slice.call(list.querySelectorAll('.person'));
+  var cards = Array.prototype.slice.call(list.querySelectorAll(cfg.card));
   var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var hasGsap = typeof window.gsap !== 'undefined';
   var open = null;
@@ -15,16 +23,17 @@
 
   function rand(a, b) { return a + Math.random() * (b - a); }
 
-  /* Wrap each word of the detail paragraph in a span once, so words can be revealed one by one. */
+  /* Wrap each word of the detail text (its paragraphs or list items) in a span once, so words can be revealed one by one. */
   function words(card) {
-    var p = card.querySelector('.person-detail p');
-    if (!p.dataset.split) {
+    var blocks = card.querySelectorAll('.person-detail p, .person-detail li');
+    Array.prototype.forEach.call(blocks, function (p) {
+      if (p.dataset.split) return;
       p.innerHTML = p.textContent.trim().split(/\s+/).map(function (w) {
         return '<span class="dust-word">' + w.replace(/&/g, '&amp;').replace(/</g, '&lt;') + '</span>';
       }).join(' ');
       p.dataset.split = '1';
-    }
-    return Array.prototype.slice.call(p.querySelectorAll('.dust-word'));
+    });
+    return Array.prototype.slice.call(card.querySelectorAll('.person-detail .dust-word'));
   }
 
   function dust(card) {
@@ -43,7 +52,7 @@
     size();
 
     var box = card.getBoundingClientRect();
-    var av = card.querySelector('.avatar').getBoundingClientRect();
+    var av = card.querySelector(cfg.mark).getBoundingClientRect();
     var ox = av.left + av.width / 2 - box.left, oy = av.top + av.height / 2 - box.top;
     var parts = [];
     var stars = [];
@@ -164,7 +173,7 @@
   function grow(card, closedH) {
     var d = card.querySelector('.person-detail');
     var extra = card.offsetHeight - closedH;
-    var mb = wide.matches ? -extra : 0;
+    var mb = cfg.float && wide.matches ? -extra : 0;
     if (reduce || !hasGsap) { card.style.marginBottom = mb + 'px'; return; }
     gsap.fromTo(d, { height: 0 }, { height: 'auto', duration: .45, ease: 'power2.out', clearProps: 'height' });
     gsap.fromTo(card, { marginBottom: 0 }, { marginBottom: mb, duration: .45, ease: 'power2.out' });
@@ -204,8 +213,9 @@
     var hint = document.createElement('span');
     hint.className = 'person-hint';
     hint.setAttribute('aria-hidden', 'true');
-    hint.innerHTML = '<span class="person-hint-dot"></span>' + (touch ? 'Tap' : 'Click') + ' to explore';
-    card.querySelector('.role').insertAdjacentElement('afterend', hint);
+    // a card may carry its own wording (data-hint), e.g. "Meet our sponsor"
+    hint.innerHTML = '<span class="person-hint-dot"></span>' + (card.dataset.hint || ((touch ? 'Tap' : 'Click') + ' to explore'));
+    card.querySelector(cfg.hintAfter).insertAdjacentElement('afterend', hint);
   });
 
   cards.forEach(function (card) {
@@ -224,4 +234,5 @@
       btn.focus();
     }
   });
+  }
 })();
