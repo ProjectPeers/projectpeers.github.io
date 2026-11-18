@@ -370,6 +370,123 @@
     el('polygon', { points: [L, F, R, [R[0], R[1] - 400], [L[0], L[1] - 400]].map(function (q) { return q[0].toFixed(1) + ',' + q[1].toFixed(1); }).join(' ') }, cp);
   })();
 
+  // ---------- the crew (idle loop only) ----------
+  // Small engineers in hard hats and hi-vis vests, drawn in the scene's flat style. Each is built standing on its own
+  // feet at (0, 0) in screen units and placed on the floor with iso(). Poses: 'tablet' (checks an iPad), 'walk'
+  // (walks along the belt with a wrench on the shoulder), 'kneel' (fixes a cable at a junction box with a wrench).
+  var VEST = '#ff7a1a', STRIPE = '#eef3f8', PANTS = '#2c3e57', SHIRT = '#3b4b63', BOOT = '#16181c';
+  var gCrew = el('g', { opacity: 0 }, gFront);   // added last in the front layer: every spot is in front of what is near it
+  function wrenchShape(parent) {
+    var w = el('g', null, parent);
+    el('path', { d: 'M0 0 L13 0', stroke: '#8f98a3', 'stroke-width': 2.6, 'stroke-linecap': 'round' }, w);
+    el('path', { d: 'M12 -3.2 A3.4 3.4 0 1 1 12 3.2', fill: 'none', stroke: '#8f98a3', 'stroke-width': 2.4, 'stroke-linecap': 'round' }, w);
+    el('path', { d: 'M0 0 L13 0', stroke: INK, 'stroke-width': 0.7, opacity: 0.45 }, w);
+    return w;
+  }
+  function engineer(x, y, pose, skin, hat, scale, flip) {
+    var at = iso(x, y, 0);
+    var root = el('g', { transform: 'translate(' + at[0].toFixed(1) + ' ' + at[1].toFixed(1) + ')' }, gCrew);
+    var body = el('g', { transform: 'scale(' + (flip ? -scale : scale) + ' ' + scale + ')' }, root);
+    var o = { root: root, body: body, pose: pose, x: x, y: y, scale: scale, flip: flip };
+    var line = { stroke: INK, 'stroke-width': 1.2, 'stroke-linejoin': 'round' };
+    el('ellipse', { cx: 0, cy: 0, rx: 11, ry: 3.6, fill: 'rgba(22,24,28,.18)' }, body);
+    var up = el('g', null, body);   // everything above the hips (lowered when kneeling)
+    o.up = up;
+    if (pose === 'kneel') {
+      // back leg: knee on the floor, shin lying behind; front leg: thigh forward, shin down
+      el('path', Object.assign({ d: 'M-4 -12 L-8 -2 L-17 -2 L-17 1 L-6 1 L-1 -10 Z', fill: PANTS }, line), body);
+      el('path', Object.assign({ d: 'M1 -12 L9 -9 L9 0 L13 0 L13 1 L5 1 L5 -6 L-1 -8 Z', fill: PANTS }, line), body);
+      up.setAttribute('transform', 'translate(0 5)');
+    } else {
+      o.legB = el('g', null, body); o.legF = el('g', null, body);
+      [o.legB, o.legF].forEach(function (lg, k) {
+        var lx = k ? 0.6 : -5.2;
+        el('rect', Object.assign({ x: lx, y: -17, width: 4.6, height: 16, rx: 1.6, fill: PANTS }, line), lg);
+        el('rect', { x: lx - 0.8, y: -2.6, width: 6.2, height: 3.2, rx: 1, fill: BOOT }, lg);
+      });
+    }
+    // back arm (drawn behind the torso)
+    o.armB = el('g', { transform: 'translate(-5 -30)' }, up);
+    el('rect', Object.assign({ x: -2, y: 0, width: 4, height: 13, rx: 2, fill: SHIRT }, line), o.armB);
+    el('circle', { cx: 0, cy: 13.5, r: 2.3, fill: skin, stroke: INK, 'stroke-width': 1 }, o.armB);
+    // torso with the vest and its two reflective stripes
+    el('path', Object.assign({ d: 'M-8 -15 L-8 -27 Q-8 -33 -2.5 -33 L2.5 -33 Q8 -33 8 -27 L8 -15 Z', fill: SHIRT }, line), up);
+    el('path', Object.assign({ d: 'M-8 -15 L-8 -27 Q-8 -33 -2.5 -33 L-1.2 -33 L0 -27 L1.2 -33 L2.5 -33 Q8 -33 8 -27 L8 -15 Z', fill: VEST }, line), up);
+    el('rect', { x: -7.4, y: -23.5, width: 14.8, height: 2.2, fill: STRIPE }, up);
+    el('rect', { x: -7.4, y: -19.5, width: 14.8, height: 2.2, fill: STRIPE }, up);
+    // head and hard hat
+    o.head = el('g', null, up);
+    el('circle', { cx: 0, cy: -38, r: 5.6, fill: skin, stroke: INK, 'stroke-width': 1.2 }, o.head);
+    el('path', Object.assign({ d: 'M-6.6 -39.6 A6.6 6.6 0 0 1 6.6 -39.6 Z', fill: hat }, line), o.head);
+    el('path', { d: 'M-8.6 -39.6 L9.2 -39.6', stroke: INK, 'stroke-width': 2.6, 'stroke-linecap': 'round' }, o.head);
+    el('path', { d: 'M-8.2 -39.6 L8.8 -39.6', stroke: hat, 'stroke-width': 1.2, 'stroke-linecap': 'round' }, o.head);
+    el('path', { d: 'M0 -46 L0 -41', stroke: INK, 'stroke-width': 0.9, opacity: 0.5 }, o.head);
+    // front arm and what the hand holds
+    o.armF = el('g', { transform: 'translate(5 -30)' }, up);
+    el('rect', Object.assign({ x: -2, y: 0, width: 4, height: 13, rx: 2, fill: SHIRT }, line), o.armF);
+    el('circle', { cx: 0, cy: 13.5, r: 2.3, fill: skin, stroke: INK, 'stroke-width': 1 }, o.armF);
+    if (pose === 'tablet') {
+      // both forearms forward, the tablet held in front of the chest
+      o.armB.setAttribute('transform', 'translate(-5 -30) rotate(-70)');
+      o.armF.setAttribute('transform', 'translate(5 -30) rotate(-55)');
+      o.tablet = el('g', { transform: 'translate(10 -27) rotate(-14)' }, up);
+      el('rect', { x: -1, y: -6, width: 14, height: 10, rx: 1.6, fill: '#1b1f26', stroke: INK, 'stroke-width': 1 }, o.tablet);
+      el('rect', { x: 0.6, y: -4.6, width: 10.8, height: 7.2, rx: 0.8, fill: '#13324f' }, o.tablet);
+      o.bars = [0, 1, 2, 3].map(function (k) { return el('rect', { x: 1.8 + k * 2.6, y: 1.6, width: 1.7, height: 1, fill: k === 3 ? GOLD : '#3ddc84' }, o.tablet); });
+    } else if (pose === 'walk') {
+      // wrench carried in the hand, pointing down
+      var w = wrenchShape(o.armF); w.setAttribute('transform', 'translate(0.5 14) rotate(80)');
+    } else if (pose === 'kneel') {
+      o.armB.setAttribute('transform', 'translate(-5 -30) rotate(-35)');
+      o.armF.setAttribute('transform', 'translate(5 -30) rotate(-70)');
+      o.wrench = wrenchShape(up); o.wrench.setAttribute('transform', 'translate(16 -24)');
+    }
+    return o;
+  }
+  // A junction box on the floor beside the belt, its cable running to the motor under the next corner pad.
+  (function () {
+    var jb = el('g', null, gCrew);
+    el('path', { d: 'M' + pts([[16.95, -10.45, 0.02], [17.5, -10.65, 0.02], [17.7, -11.05, 0.02]]).replace(/ /g, ' L'), fill: 'none', stroke: '#16181c', 'stroke-width': 2.6, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }, jb);
+    box(jb, 16.45, -10.75, 0, 0.5, 0.5, 0.4, [GREY, GREY_S, GREY_D], 1.1);
+    var led = iso(16.7, -10.25, 0.27);
+    el('circle', { cx: led[0], cy: led[1], r: 1.6, fill: '#3ddc84' }, jb);
+  })();
+  var crew = [
+    engineer(8.4, -3.5, 'tablet', '#f1c7a3', '#fdbb30', 0.95, false),    // at the quality gate, checking the checks
+    engineer(3.0, 1.9, 'walk', '#8d5a3b', '#ffffff', 0.95, false),        // walking along the first belt
+    engineer(15.9, -9.9, 'kneel', '#c68b59', '#fdbb30', 0.95, false),     // fixing the cable at the junction box
+    engineer(24.0, -15.9, 'tablet', '#c68b59', '#ffffff', 0.95, false)    // by the rocket, checking the launch
+  ];
+  // Moves the crew for ambient time a (seconds). Small, looping motions only.
+  function animateCrew(a) {
+    crew.forEach(function (c, k) {
+      if (c.pose === 'tablet') {
+        c.head.setAttribute('transform', 'rotate(' + (Math.sin(a * 1.3 + k) * 4).toFixed(2) + ' 0 -33)');
+        c.armF.setAttribute('transform', 'translate(5 -30) rotate(' + (-55 + Math.max(0, Math.sin(a * 5 + k)) * 8).toFixed(1) + ')');   // tapping
+        c.bars.forEach(function (b, j) {
+          var hgt = 1.2 + 3.6 * (0.5 + 0.5 * Math.sin(a * 1.7 + j * 1.1 + k));
+          b.setAttribute('y', (2.6 - hgt).toFixed(2)); b.setAttribute('height', hgt.toFixed(2));
+        });
+      } else if (c.pose === 'walk') {
+        // back and forth along the front of the first belt, turning at each end
+        var span = 3.2, speed = 0.55, ph = (a * speed) % (2 * span), dir = ph < span ? 1 : -1;
+        var px = c.x - span / 2 + (dir > 0 ? ph : 2 * span - ph);
+        var at = iso(px, c.y, 0), step = Math.sin(a * 7);
+        c.root.setAttribute('transform', 'translate(' + at[0].toFixed(1) + ' ' + (at[1] - Math.abs(step) * 0.8).toFixed(1) + ')');
+        c.body.setAttribute('transform', 'scale(' + (dir > 0 ? c.scale : -c.scale) + ' ' + c.scale + ')');
+        c.legB.setAttribute('transform', 'rotate(' + (step * 20).toFixed(1) + ' -3 -16)');
+        c.legF.setAttribute('transform', 'rotate(' + (-step * 20).toFixed(1) + ' 3 -16)');
+        c.armB.setAttribute('transform', 'translate(-5 -30) rotate(' + (step * 18).toFixed(1) + ')');
+        c.armF.setAttribute('transform', 'translate(5 -30) rotate(' + (-step * 14).toFixed(1) + ')');
+      } else if (c.pose === 'kneel') {
+        var turn = Math.sin(a * 4.2);
+        c.wrench.setAttribute('transform', 'translate(16 -24) rotate(' + (25 + turn * 28).toFixed(1) + ')');
+        c.armF.setAttribute('transform', 'translate(5 -30) rotate(' + (-70 + turn * 10).toFixed(1) + ')');
+        c.head.setAttribute('transform', 'rotate(10 0 -33)');
+      }
+    });
+  }
+
   // Red failure paths (screen-space arcs that draw themselves).
   function arc(from, to, lift) {
     var a = iso(from[0], from[1], from[2]), b = iso(to[0], to[1], to[2]);
@@ -571,6 +688,9 @@
     if (t >= 19.9 && t < 21.0) { g = 1 - prog(t, 20.6, 21.0); gp = arcPoint(arcSmoke, prog(t, 19.9, 20.7)); }
     setGhost(g, gp);
 
+    // The crew works only in the idle loop.
+    setOpacity(gCrew, 0);
+
     // Rocket launch at the end.
     setOpacity(rocket, 1);
     var lift = prog(t, 26.7, 28.9);
@@ -699,6 +819,8 @@
     rocket.setAttribute('transform', 'translate(0 0)');
     setOpacity(flame, 0);
     setOpacity(phase, fadeIn);
+    setOpacity(gCrew, fadeIn);
+    animateCrew(amb);
 
     // Pull request: the button glows when a change arrives, and again when a failed one comes back.
     var glow = Math.max(on(u, 1.8, 3.2), gf ? on(u, 11.6, 13.0) : 0);
