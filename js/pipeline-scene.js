@@ -73,7 +73,7 @@
   // Station anchors (screen points used for the camera and the callouts).
   var ST = {
     desk: [-1.3, -2.6], pr: [3, -2.8], ci: [4.1, -7.9], gate: [9, -8.5], staging: [10.1, -13.9],
-    smoke: [15, -14.5], prod: [16.1, -19.9], rocket: [25.7, -18]
+    smoke: [15, -14.5], prod: [16.1, -19.9], rocket: [26.45, -18]
   };
 
   // ---------- drawing ----------
@@ -318,23 +318,87 @@
     arm.armDash = el('line', { stroke: INK, 'stroke-width': 6, 'stroke-dasharray': '7 7' }, g);
   })();
 
-  // Rocket on its pad at the end of the belt.
+  // Rocket at the end of the belt: a Starship-style stack (Super Heavy booster plus the ship) standing on an
+  // orbital launch mount, with the launch tower and its catch arms beside it. Drawn in units scaled 3x;
+  // strokes keep the scene's line weight (non-scaling).
   var rocket, flame, rocketPuffs = [];
   (function () {
     var c = iso(ST.rocket[0], ST.rocket[1], 0);
+    var MOUNT = 10;   // height of the launch mount's table, in rocket units
+    var steel = el('linearGradient', { id: 'bs-steel', x1: 0, y1: 0, x2: 1, y2: 0 }, defs);
+    [[0, '#121418'], [0.3, '#3a3f47'], [0.55, '#23272d'], [1, '#0d0f12']].forEach(function (st) {
+      el('stop', { offset: st[0], 'stop-color': st[1] }, steel);
+    });
+    // Carbon-fibre weave: small alternating tiles, laid over the dark body.
+    var weave = el('pattern', { id: 'bs-carbon', width: 2, height: 2, patternUnits: 'userSpaceOnUse' }, defs);
+    el('rect', { x: 0, y: 0, width: 1, height: 1, fill: '#ffffff', opacity: 0.07 }, weave);
+    el('rect', { x: 1, y: 1, width: 1, height: 1, fill: '#ffffff', opacity: 0.07 }, weave);
+    el('path', { d: 'M0 1 L1 0 M1 2 L2 1', stroke: '#ffffff', 'stroke-width': 0.15, opacity: 0.08 }, weave);
+    // Brushed stainless steel for the booster.
+    var silver = el('linearGradient', { id: 'bs-silver', x1: 0, y1: 0, x2: 1, y2: 0 }, defs);
+    [[0, '#8e97a2'], [0.32, '#eef1f4'], [0.6, '#c3c9d1'], [1, '#7f8893']].forEach(function (st) {
+      el('stop', { offset: st[0], 'stop-color': st[1] }, silver);
+    });
+    var STEEL_F = 'url(#bs-steel)', SILVER_F = 'url(#bs-silver)', DARK = '#2a2e35', GRID = '#5b626c';
+    var ln = { stroke: INK, 'stroke-width': 1.4, 'stroke-linejoin': 'round' };
+    function P(parent, d, fill, extra) { return el('path', Object.assign({ d: d, fill: fill }, ln, extra || {}), parent); }
+
+    // Ground pad, then the tower and the launch mount (they stay when the rocket lifts off).
     var pad = el('g', null, gFront);
-    el('ellipse', { cx: c[0], cy: c[1], rx: 58, ry: 30, fill: '#e3e0d9', stroke: INK, 'stroke-width': 1.6 }, pad);
-    el('ellipse', { cx: c[0], cy: c[1] - 4, rx: 44, ry: 22, fill: 'none', stroke: GOLD, 'stroke-width': 1.6 }, pad);
-    for (var p = 0; p < 6; p++) rocketPuffs.push(el('circle', { cx: c[0], cy: c[1], r: 10, fill: '#fff', stroke: '#c8c5be', 'stroke-width': 1.2, opacity: 0 }, pad));
+    // (sized and placed so the pad clears the last belt pad: rocket at x 26.45, rx 50)
+    el('ellipse', { cx: c[0], cy: c[1], rx: 50, ry: 26, fill: '#e3e0d9', stroke: INK, 'stroke-width': 1.6 }, pad);
+    el('ellipse', { cx: c[0], cy: c[1] - 3, rx: 38, ry: 19, fill: 'none', stroke: GOLD, 'stroke-width': 1.6 }, pad);
+    var art = el('g', { transform: 'translate(' + c[0] + ' ' + (c[1] - 6) + ') scale(3)' }, pad);
+    // Launch tower: a steel lattice to the right, with a lightning rod on top.
+    P(art, 'M15 0 L15 -128 L22 -128 L22 0 Z', GRID);
+    var lat = '';
+    for (var yy = 0; yy > -128; yy -= 8) lat += 'M15 ' + yy + ' L22 ' + (yy - 8) + ' M22 ' + yy + ' L15 ' + (yy - 8) + ' M15 ' + yy + ' L22 ' + yy + ' ';
+    el('path', { d: lat, stroke: '#3a4049', 'stroke-width': 0.7, fill: 'none' }, art);
+    el('path', { d: 'M18.5 -128 L18.5 -138', stroke: INK, 'stroke-width': 1.2 }, art);
+    P(art, 'M13.5 0 L23.5 0 L23.5 2 L13.5 2 Z', DARK);
+    // Catch arms ("chopsticks") on a carriage, reaching behind the booster, and the ship's quick-disconnect arm.
+    P(art, 'M13.8 -74 L23.2 -74 L23.2 -66 L13.8 -66 Z', DARK);
+    P(art, 'M-9 -73 L15 -73 L15 -70.5 L-9 -70.5 Z', '#3a4049');
+    P(art, 'M-9 -69 L15 -69 L15 -66.8 L-9 -66.8 Z', '#3a4049');
+    P(art, 'M7 -98 L15 -98 L15 -95.5 L7 -95.5 Z', '#3a4049');
+    // Orbital launch mount: a steel table on legs, its ring holding the booster.
+    P(art, 'M-9.5 0 L-9.5 -' + (MOUNT - 2) + ' L-7.5 -' + (MOUNT - 2) + ' L-7.5 0 Z', GRID);
+    P(art, 'M7.5 0 L7.5 -' + (MOUNT - 2) + ' L9.5 -' + (MOUNT - 2) + ' L9.5 0 Z', GRID);
+    P(art, 'M-4.5 0 L-4.5 -' + (MOUNT - 2) + ' L-2.5 -' + (MOUNT - 2) + ' L-2.5 0 Z', GRID);
+    P(art, 'M2.5 0 L2.5 -' + (MOUNT - 2) + ' L4.5 -' + (MOUNT - 2) + ' L4.5 0 Z', GRID);
+    P(art, 'M-10 -' + (MOUNT - 2) + ' L10 -' + (MOUNT - 2) + ' L10 -' + MOUNT + ' L-10 -' + MOUNT + ' Z', DARK);
+    Array.prototype.forEach.call(art.querySelectorAll('path'), function (n) { n.setAttribute('vector-effect', 'non-scaling-stroke'); });
+    for (var q = 0; q < 6; q++) rocketPuffs.push(el('circle', { cx: c[0], cy: c[1], r: 10, fill: '#fff', stroke: '#c8c5be', 'stroke-width': 1.2, opacity: 0 }, pad));
+
+    // The rocket itself (this group lifts off). Its base sits on the mount's table.
     rocket = el('g', null, gFront);
-    var r = el('g', { transform: 'translate(' + c[0] + ' ' + (c[1] - 6) + ')' }, rocket);
-    flame = el('path', { d: 'M-7 0 Q0 30 7 0 Z', fill: '#ff9b2f', stroke: RED, 'stroke-width': 1.5, opacity: 0 }, r);
-    el('path', { d: 'M-15 -2 L-15 -26 L-8 -36 L-8 -2 Z', fill: RED, stroke: INK, 'stroke-width': 1.6, 'stroke-linejoin': 'round' }, r);
-    el('path', { d: 'M15 -2 L15 -26 L8 -36 L8 -2 Z', fill: RED, stroke: INK, 'stroke-width': 1.6, 'stroke-linejoin': 'round' }, r);
-    el('path', { d: 'M-10 -2 L-10 -78 Q0 -104 10 -78 L10 -2 Z', fill: '#fff', stroke: INK, 'stroke-width': 1.8, 'stroke-linejoin': 'round' }, r);
-    el('path', { d: 'M-10 -78 Q0 -104 10 -78 Z', fill: RED, stroke: INK, 'stroke-width': 1.6 }, r);
-    ['K', 'S', 'U'].forEach(function (ch, k) { text(r, ch, { x: 0, y: -50 + k * 13, 'text-anchor': 'middle', 'font-size': 11, 'font-weight': 900, fill: GOLD, stroke: INK, 'stroke-width': 0.6, 'font-family': 'var(--sans)' }); });
-    el('circle', { cx: 0, cy: -64, r: 4, fill: GOLD, stroke: INK, 'stroke-width': 1.2 }, r);
+    var r = el('g', { transform: 'translate(' + c[0] + ' ' + (c[1] - 6 - MOUNT * 3) + ') scale(3)' }, rocket);
+    flame = el('path', { d: 'M-6.5 0 Q0 19 6.5 0 Z', fill: '#ff9b2f', stroke: RED, 'stroke-width': 1.5, opacity: 0 }, r);
+    // Super Heavy booster: stainless-steel body with weld seams, darker engine skirt, four grid fins near the top,
+    // then the vented hot-staging ring. (The ship above is black carbon.)
+    P(r, 'M-7 0 L-7 -60 L7 -60 L7 0 Z', SILVER_F);
+    el('path', { d: 'M-7 -12 L7 -12 M-7 -24 L7 -24 M-7 -36 L7 -36 M-7 -48 L7 -48', stroke: '#8a939e', 'stroke-width': 0.7 }, r);
+    P(r, 'M-7 0 L-7 -4 L7 -4 L7 0 Z', '#4a5059');
+    [-1, 1].forEach(function (sd) {
+      P(r, 'M' + 7 * sd + ' -57 L' + 11 * sd + ' -57 L' + 11 * sd + ' -52.5 L' + 7 * sd + ' -52.5 Z', DARK);
+      el('path', { d: 'M' + 8.3 * sd + ' -57 L' + 8.3 * sd + ' -52.5 M' + 9.7 * sd + ' -57 L' + 9.7 * sd + ' -52.5 M' + 7 * sd + ' -54.8 L' + 11 * sd + ' -54.8', stroke: '#7b8390', 'stroke-width': 0.6 }, r);
+    });
+    P(r, 'M-3 -57 L3 -57 L3 -53 L-3 -53 Z', DARK);
+    el('path', { d: 'M-1 -57 L-1 -53 M1 -57 L1 -53 M-3 -55 L3 -55', stroke: '#7b8390', 'stroke-width': 0.6 }, r);
+    P(r, 'M-7 -60 L-7 -64 L7 -64 L7 -60 Z', '#4a5059');
+    el('path', { d: 'M-5 -60.6 L-5 -63.4 M-2.5 -60.6 L-2.5 -63.4 M0 -60.6 L0 -63.4 M2.5 -60.6 L2.5 -63.4 M5 -60.6 L5 -63.4', stroke: '#c3c9d1', 'stroke-width': 0.8 }, r);
+    // Ship: aft flaps, steel body with the black heat-shield tiles on one side, nose with the forward flaps.
+    [-1, 1].forEach(function (sd) {
+      P(r, 'M' + 7 * sd + ' -64 L' + 11 * sd + ' -65.5 L' + 11 * sd + ' -74 L' + 7 * sd + ' -77 Z', DARK);
+      P(r, 'M' + 6.4 * sd + ' -97 L' + 9.3 * sd + ' -98.5 L' + 9.3 * sd + ' -102.5 L' + 5.6 * sd + ' -104.5 Z', DARK);
+    });
+    P(r, 'M-7 -64 L-7 -96 Q-7 -108 0 -112 Q7 -108 7 -96 L7 -64 Z', STEEL_F);
+    el('path', { d: 'M-7 -64 L-7 -96 Q-7 -108 0 -112 Q7 -108 7 -96 L7 -64 Z', fill: 'url(#bs-carbon)' }, r);
+    el('path', { d: 'M-7 -76 L7 -76 M-7 -88 L7 -88 M3.5 -64 L3.5 -100', stroke: '#4a5059', 'stroke-width': 0.7 }, r);
+    P(r, 'M-7 -64 L-7 -96 Q-7 -108 0 -112 L0 -64 Z', '#0b0c0f', { 'stroke-width': 0 });
+    P(r, 'M-7 -64 L-7 -96 Q-7 -108 0 -112 Q7 -108 7 -96 L7 -64 Z', 'none');
+    ['K', 'S', 'U'].forEach(function (ch, k) { text(r, ch, { x: 0, y: -38 + k * 11, 'text-anchor': 'middle', 'font-size': 9.5, 'font-weight': 900, fill: GOLD, stroke: INK, 'stroke-width': 0.6, 'font-family': 'var(--sans)' }); });
+    Array.prototype.forEach.call(r.querySelectorAll('path, circle, text'), function (n) { n.setAttribute('vector-effect', 'non-scaling-stroke'); });
   })();
 
   // Code packages (the main one, and a "ghost" for the failure paths).
@@ -436,13 +500,17 @@
     el('circle', { cx: 0, cy: 13.5, r: 2.3, fill: skin, stroke: INK, 'stroke-width': 1 }, o.armB);
     // torso with the vest and its two reflective stripes
     el('path', Object.assign({ d: 'M-8 -15 L-8 -27 Q-8 -33 -2.5 -33 L2.5 -33 Q8 -33 8 -27 L8 -15 Z', fill: SHIRT }, line), up);
-    el('path', Object.assign({ d: 'M-8 -15 L-8 -27 Q-8 -33 -2.5 -33 L-1.2 -33 L0 -27 L1.2 -33 L2.5 -33 Q8 -33 8 -27 L8 -15 Z', fill: VEST }, line), up);
+    // seen from the back (opt.back) the vest has no V-neck and the stripes cross in an X
+    el('path', Object.assign({ d: opt.back ? 'M-8 -15 L-8 -27 Q-8 -33 -2.5 -33 L2.5 -33 Q8 -33 8 -27 L8 -15 Z'
+      : 'M-8 -15 L-8 -27 Q-8 -33 -2.5 -33 L-1.2 -33 L0 -27 L1.2 -33 L2.5 -33 Q8 -33 8 -27 L8 -15 Z', fill: VEST }, line), up);
     el('rect', { x: -7.4, y: -23.5, width: 14.8, height: 2.2, fill: STRIPE }, up);
     el('rect', { x: -7.4, y: -19.5, width: 14.8, height: 2.2, fill: STRIPE }, up);
-    // head: a ponytail out from under the hard hat for the women, then the face and the hat
+    if (opt.back) el('path', { d: 'M-6 -32 L6 -24 M6 -32 L-6 -24', stroke: STRIPE, 'stroke-width': 1.8 }, up);
+    // head: a ponytail out from under the hard hat for the women, then the face (or the back of the head) and the hat
     o.head = el('g', null, up);
     if (opt.female) el('path', Object.assign({ d: 'M-3.5 -42 Q-12 -41 -11 -30 Q-8.5 -32.5 -5 -35.5 Z', fill: opt.hair || '#3a2416' }, line), o.head);
-    el('circle', { cx: 0, cy: -38, r: 5.6, fill: skin, stroke: INK, 'stroke-width': 1.2 }, o.head);
+    el('circle', { cx: 0, cy: -38, r: 5.6, fill: opt.back ? (opt.hair || '#3a2416') : skin, stroke: INK, 'stroke-width': 1.2 }, o.head);
+    if (opt.back) el('rect', { x: -2.4, y: -33.6, width: 4.8, height: 1.8, fill: skin }, o.head);   // the neck
     el('path', Object.assign({ d: 'M-6.6 -39.6 A6.6 6.6 0 0 1 6.6 -39.6 Z', fill: hat }, line), o.head);
     el('path', { d: 'M-8.6 -39.6 L9.2 -39.6', stroke: INK, 'stroke-width': 2.6, 'stroke-linecap': 'round' }, o.head);
     el('path', { d: 'M-8.2 -39.6 L8.8 -39.6', stroke: hat, 'stroke-width': 1.2, 'stroke-linecap': 'round' }, o.head);
@@ -490,20 +558,21 @@
     el('circle', { cx: led[0], cy: led[1], r: 1.6, fill: '#3ddc84' }, jb);
   })();
   var crew = [
-    // on the little white box in front of the giant laptop, reviewing the code on its screen with a magnifying glass
-    engineer(-0.26, -2.01, 1.13, 'look', { skin: '#e0ac85', hat: '#fdbb30', flip: true, scale: 0.85 }),
+    // standing on the giant laptop's keyboard with his back to us, reviewing the code on its screen with a magnifying glass
+    engineer(-1.35, -2.55, 0.83, 'look', { skin: '#e0ac85', hat: '#fdbb30', hair: '#4a2e1a', back: true, scale: 0.62 }),
     // at the quality gate, checking the checks on an iPad
     engineer(8.4, -3.5, 0, 'tablet', { skin: '#f1c7a3', hat: '#ffffff', female: true, hair: '#6b3e1e' }),
     // walking along the first belt with a wrench
     // beside the quality-gate barrier, opening and closing it with a control pendant (cable to the post's base)
-    engineer(12.45, -4.45, 0, 'operate', { skin: '#8d5a3b', hat: '#ffffff', flip: true, cableTo: (function () {
-      var post = iso(11.02, -4.8, 0.2), me = iso(12.45, -4.45, 0);
-      return [-(post[0] - me[0]) / 0.95, (post[1] - me[1]) / 0.95];   // in his own (mirrored, scaled) units
+    // (on open floor in front of the gate, so nothing on the belt sits behind him on screen)
+    engineer(10.6, -2.4, 0, 'operate', { skin: '#8d5a3b', hat: '#ffffff', cableTo: (function () {
+      var post = iso(11.02, -4.8, 0.2), me = iso(10.6, -2.4, 0);
+      return [(post[0] - me[0]) / 0.95, (post[1] - me[1]) / 0.95];   // in his own (scaled) units
     })() }),
     // kneeling at the junction box, fixing the motor's cable with pliers
     engineer(15.9, -9.9, 0, 'kneel', { skin: '#c68b59', hat: '#fdbb30', female: true, hair: '#1f140d' }),
     // by the rocket, on the walkie-talkie for the launch
-    engineer(24.0, -15.9, 0, 'radio', { skin: '#5c3a24', hat: '#fdbb30' })
+    engineer(24.7, -14.7, 0, 'radio', { skin: '#5c3a24', hat: '#fdbb30' })
   ];
   // Moves the crew for ambient time a (seconds). Small, looping motions only.
   function animateCrew(a) {
@@ -616,7 +685,7 @@
     [16.6, at('staging')[0] + 40, at('staging')[1] + 40, 640], [17.6, at('staging')[0] + 60, at('staging')[1] + 40, 640],
     [18.6, at('smoke')[0] - 50, at('smoke')[1] + 30, 700], [23.2, at('smoke')[0] - 60, at('smoke')[1] + 30, 700],
     [24.2, at('prod')[0] + 40, at('prod')[1] + 40, 640], [25.8, at('prod')[0] + 70, at('prod')[1] + 40, 640],
-    [26.6, at('rocket')[0] - 120, at('rocket')[1] - 40, 760],
+    [26.6, at('rocket')[0] - 110, at('rocket')[1] - 125, 900],   // tall enough for the rocket on its mount and the tower
     [27.6].concat(OV), [30].concat(OV)
   ];
 
@@ -757,9 +826,9 @@
       var base = n.base || (n.base = [Number(n.getAttribute('cx')), Number(n.getAttribute('cy'))]);
       var ph = clamp((t - 26.6 - k * 0.12) / 1.8, 0, 1);
       var dir = k % 2 ? 1 : -1;
-      n.setAttribute('cx', (base[0] + dir * ph * (30 + k * 8)).toFixed(1));
-      n.setAttribute('cy', (base[1] - ph * 18).toFixed(1));
-      n.setAttribute('r', (8 + ph * 18).toFixed(1));
+      n.setAttribute('cx', (base[0] + dir * ph * (50 + k * 12)).toFixed(1));
+      n.setAttribute('cy', (base[1] - ph * 26).toFixed(1));
+      n.setAttribute('r', (12 + ph * 30).toFixed(1));
       setOpacity(n, ph > 0 && ph < 1 ? (1 - ph) * 0.95 : 0);
     });
 
