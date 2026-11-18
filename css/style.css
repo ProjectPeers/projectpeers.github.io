@@ -257,6 +257,10 @@ p { margin: 0 0 1rem; }
 .js .mentor.is-open .person-detail { display: block; }
 .mentor.is-open { border-color: rgba(253, 187, 48, .55); }
 .mentor.is-open .person-hint { display: none; }
+/* When an open card is made as tall as the other one, its thank-you line sits at the bottom. */
+.mentor.is-open .mentor-body { align-self: stretch; display: flex; flex-direction: column; }
+.mentor.is-open .mentor-thanks { margin-top: auto; }
+.mentor.is-open .mentor-facts { margin-bottom: 1.1rem; }
 .mentors { align-items: start; }
 .mentors.has-open > .mentor:not(.is-open) { opacity: .32; filter: grayscale(1) blur(.5px); transform: scale(.97); }
 .mentors.has-open > .mentor:not(.is-open):hover { opacity: .55; }

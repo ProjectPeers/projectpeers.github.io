@@ -9,7 +9,7 @@
   // float: on wide screens the open card floats over the row below instead of pushing it down.
   var GROUPS = [
     { list: '.cards-team', card: '.person', mark: '.avatar', hintAfter: '.role', float: true },
-    { list: '.mentors', card: '.mentor', mark: '.mentor-mark', hintAfter: '.mentor-org', float: false }
+    { list: '.mentors', card: '.mentor', mark: '.mentor-mark', hintAfter: '.mentor-org', float: false, equal: true }
   ];
   GROUPS.forEach(setup);
   function setup(cfg) {
@@ -170,6 +170,7 @@
   // On wide screens the open card floats over the (dimmed) row below it: a negative bottom
   // margin equal to its growth keeps its place in the layout, so nothing else moves.
   var wide = window.matchMedia('(min-width: 761px)');
+  var sideBySide = window.matchMedia('(min-width: 901px)');   // the mentor cards sit in two columns from here
   function grow(card, closedH) {
     var d = card.querySelector('.person-detail');
     var extra = card.offsetHeight - closedH;
@@ -184,6 +185,7 @@
     if (run) { run.stop(); run = null; }
     if (hasGsap) gsap.killTweensOf([open, open.querySelector('.person-detail')]);
     open.style.marginBottom = '';
+    open.style.height = '';
     open.querySelector('.person-detail').style.height = '';
     open.classList.remove('is-open');
     open.querySelector('.person-toggle').setAttribute('aria-expanded', 'false');
@@ -196,10 +198,21 @@
     close();
     open = card;
     var closedH = card.offsetHeight;
+    // equal: when the cards sit side by side, every card opens to the height of the tallest open card,
+    // so the two mentor cards always match in size.
+    var target = 0;
+    if (cfg.equal && sideBySide.matches) {
+      cards.forEach(function (c) { c.classList.add('is-open'); target = Math.max(target, c.offsetHeight); c.classList.remove('is-open'); });
+    }
     card.classList.add('is-open');
     card.querySelector('.person-toggle').setAttribute('aria-expanded', 'true');
     list.classList.add('has-open');
-    grow(card, closedH);
+    if (target) {
+      if (reduce || !hasGsap) card.style.height = target + 'px';
+      else gsap.fromTo(card, { height: closedH }, { height: target, duration: .45, ease: 'power2.out' });
+    } else {
+      grow(card, closedH);
+    }
     if (!reduce) {
       run = dust(card);
       var me = run;
