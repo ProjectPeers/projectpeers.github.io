@@ -165,6 +165,35 @@ p { margin: 0 0 1rem; }
 .role { font-family: var(--mono); color: var(--subtle); font-weight: 500; font-size: .74rem; letter-spacing: .06em; text-transform: uppercase; margin-bottom: .8rem; }
 .person p:last-child { font-size: .95rem; color: var(--muted); text-align: left; }
 
+/* Mentors: the sponsor and the advisor, as two featured cards with a gold edge and a large ringed monogram. */
+.mentors { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; }
+.mentor {
+  position: relative; display: grid; grid-template-columns: 5.5rem 1fr; gap: 1.5rem; align-items: start;
+  padding: 2rem; border-radius: 16px; overflow: hidden;
+  background:
+    radial-gradient(420px 220px at 0% 0%, rgba(253, 187, 48, .10), transparent 70%),
+    var(--surface-2);
+  border: 1px solid var(--line-strong);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .05), 0 24px 60px -32px rgba(0, 0, 0, .8);
+}
+.mentor::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: linear-gradient(180deg, var(--gold), rgba(253, 187, 48, .15)); }
+.mentor-mark {
+  display: grid; place-items: center; width: 5.5rem; height: 5.5rem; border-radius: 50%;
+  background: var(--navy); color: var(--gold); font-family: var(--serif); font-size: 1.9rem; letter-spacing: .04em;
+  border: 2px solid var(--gold); box-shadow: 0 0 0 6px rgba(253, 187, 48, .08), 0 0 28px rgba(253, 187, 48, .18);
+}
+.mentor-role { font-family: var(--mono); font-size: .76rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--gold); margin: .35rem 0 .45rem; }
+.mentor h3 { font-size: 1.45rem; letter-spacing: -.015em; margin-bottom: .65rem; }
+.mentor-body p { color: var(--muted); }
+.mentor-body .mentor-org { margin: 0; font-size: .95rem; line-height: 1.5; color: var(--subtle); }
+.mentor-body .mentor-role { color: var(--gold); }
+.mentor-body .mentor-thanks { margin: 1.1rem 0 0; padding-top: .9rem; border-top: 1px solid var(--line); font-family: var(--serif); font-style: italic; color: var(--ink); }
+.mentors-quote { max-width: 46rem; margin: 3.5rem auto 0; padding-top: 2.5rem; border-top: 1px solid var(--line); text-align: center; }
+.mentors-quote blockquote { margin: 0; }
+.mentors-quote blockquote p { margin: 0; font-family: "Times New Roman", "Noto Serif", Times, serif; font-style: italic; font-size: 1.3rem; line-height: 1.55; color: var(--ink); }
+.mentors-quote figcaption { margin: .6rem 0 0; font-family: var(--mono); font-size: .72rem; letter-spacing: .14em; text-transform: uppercase; color: var(--gold); }
+.mentors-quote figcaption + blockquote { margin-top: 1.75rem; }
+
 /* Project */
 .two-col { display: grid; grid-template-columns: 1.3fr 1fr; gap: 2.5rem; }
 .two-col h3 { margin-top: 0; }
@@ -256,12 +285,15 @@ p { margin: 0 0 1rem; }
   .hero-art { max-width: 300px; order: -1; }
   .cards-3, .steps { grid-template-columns: 1fr; }
   .two-col { grid-template-columns: 1fr; }
+  .mentors { grid-template-columns: 1fr; }
   .runner-body { grid-template-columns: 1fr; gap: 1.75rem; padding: 1.25rem; }
   .runner-foot { padding: .85rem 1.25rem; flex-wrap: wrap; }
   .run-meter { flex-basis: 100%; }
 }
 @media (max-width: 760px) {
   .hero-art { max-width: 190px; }
+  .mentor { grid-template-columns: 1fr; gap: 1rem; padding: 1.5rem; }
+  .mentor-mark { width: 4.25rem; height: 4.25rem; font-size: 1.5rem; }
   .nav { flex-wrap: wrap; }
   .nav-links { flex-direction: column; width: 100%; padding-bottom: .75rem; }
   .nav-links a, .nav-links li:last-child a { padding: .75rem; }
