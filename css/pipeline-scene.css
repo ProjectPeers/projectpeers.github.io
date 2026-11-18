@@ -4,11 +4,11 @@
 
 .belt-stage {
   position: relative;
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
+  border: 1px solid rgba(255, 255, 255, .08);
+  border-radius: 16px;
   overflow: hidden;
   background: #f1efeb;
-  box-shadow: 0 1px 2px rgba(11, 27, 46, .05);
+  box-shadow: 0 24px 60px -24px rgba(0, 0, 0, .7);
 }
 .belt-stage svg { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; cursor: pointer; }
 .belt-scene:not(.is-ready) .belt-stage svg { visibility: hidden; }
@@ -24,28 +24,57 @@
 }
 .belt-caption span.on { color: var(--gold); }
 
-/* Controls */
-.belt-controls { display: flex; align-items: center; gap: .6rem; margin-top: .75rem; flex-wrap: wrap; }
-.btn-light { color: var(--navy); background: #fff; border-color: var(--navy); padding: .5rem 1rem; display: inline-flex; align-items: center; gap: .45rem; cursor: pointer; font: inherit; font-weight: 700; }
-.btn-light:hover { background: var(--bg-alt); }
-.btn-light[aria-pressed="false"], .btn-light.btn-play { background: var(--navy); color: #fff; }
-.btn-light.btn-play:hover { background: var(--navy-2); }
+/* The scene and its toolbar sit in one panel, like a product screen with its controls. */
+.belt-panel {
+  background: var(--surface); border: 1px solid var(--line); border-radius: 20px; padding: .75rem;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .04);
+}
+
+/* Controls: a toolbar strip under the scene */
+.belt-controls {
+  display: flex; align-items: center; gap: .6rem; margin-top: .75rem; flex-wrap: wrap;
+  padding: .5rem; background: var(--surface-2); border: 1px solid var(--line); border-radius: 12px;
+}
+/* The walkthrough controls use the page's one button pair: gold for Play, the quiet secondary for the rest. */
+.btn-light { color: var(--ink); background: var(--surface); border-color: var(--line-strong); padding: .5rem 1rem; cursor: pointer; font: inherit; font-weight: 700; }
+.btn-light:hover { background: var(--surface-2); }
+.btn-light.btn-play { background: var(--gold); color: var(--navy); border-color: transparent; }
+.btn-light.btn-play:hover { background: var(--gold-hover); }
 .belt-icon { width: 1rem; height: 1rem; }
 .belt-scene .icon-pause { display: none; }
 .belt-scene.is-playing .icon-pause { display: inline; }
 .belt-scene.is-playing .icon-play { display: none; }
-.btn-light.btn-sound[aria-pressed="false"] { background: #fff; color: var(--navy); }
-.btn-light.btn-sound[aria-pressed="false"]:hover { background: var(--bg-alt); }
 .belt-scene .icon-sound-off { display: none; }
 .belt-scene.is-muted .icon-sound-off { display: inline; }
 .belt-scene.is-muted .icon-sound-on { display: none; }
-.belt-scrub { flex: 1 1 10rem; accent-color: var(--navy-3); min-width: 8rem; }
-.belt-time { font-variant-numeric: tabular-nums; color: var(--muted); font-size: .95rem; min-width: 5.5rem; text-align: right; }
-.belt-hint { color: var(--muted); font-size: .95rem; margin: .6rem 0 0; }
+.belt-scrub { flex: 1 1 10rem; accent-color: var(--gold); min-width: 8rem; }
+.belt-time { font-family: var(--mono); font-variant-numeric: tabular-nums; color: var(--subtle); font-size: .95rem; min-width: 5.5rem; text-align: right; }
+.belt-hint { color: var(--subtle); font-size: .95rem; margin: .6rem 0 0; }
+
+/* The step cards follow the walkthrough: the step it is showing lights up, and "Watch" plays from that step. */
+.js .steps .step { transition: border-color .25s, background-color .25s, transform .25s; }
+.steps .step.is-current { border-color: var(--line-strong); border-top-color: var(--gold); background: var(--surface-2); transform: translateY(-2px); }
+.steps .step.is-current .step-num { background: var(--gold); color: var(--navy); border-color: var(--gold); }
+.step-watch {
+  position: absolute; top: 1.1rem; right: 1rem; display: inline-flex; align-items: center; gap: .35rem;
+  min-height: 2.25rem; padding: .3rem .7rem; border-radius: 8px; cursor: pointer;
+  font: inherit; font-size: .85rem; font-weight: 700; color: var(--ink);
+  background: var(--surface); border: 1px solid var(--line-strong);   /* the page's secondary button */
+  transition: color .15s, background-color .15s, border-color .15s;
+}
+.step-watch svg { width: .75rem; height: .75rem; }
+.step-watch:hover { color: var(--ink); background: var(--surface-2); border-color: #3b5677; }
+.step.is-current .step-watch { color: var(--gold); border-color: rgba(253, 187, 48, .5); }
 
 @media (max-width: 600px) {
   .belt-caption { bottom: 3%; padding: .25em .5em; }
   .belt-time { min-width: 0; }
+  /* On a phone the panel runs edge to edge, so the scene is as large as the screen allows. */
+  .belt-panel { margin-inline: -1rem; border-radius: 0; border-inline: 0; padding: .5rem; }
+  .belt-stage { border-radius: 10px; }
+  .belt-controls .btn-light { flex: 1 1 auto; justify-content: center; }
+  .belt-scrub { flex-basis: 100%; min-height: 2.75rem; }
+  .step-watch { min-height: 2.75rem; top: 1rem; }
 }
 @media (forced-colors: active) {
   .belt-stage { border: 2px solid CanvasText; }

@@ -766,7 +766,44 @@
   var timeOut = fig.querySelector('.belt-time');
   function fmt(t) { var s = Math.floor(t); return '0:' + (s < 10 ? '0' : '') + s; }
 
-  var t = 0, amb = 0, playing = false, visible = false, last = 0, raf = 0;
+  var t = 0, amb = 0, playing = false, visible = false;
+
+  // ---------- GSAP clock ----------
+  // One 30-second GSAP timeline is the walkthrough clock: Play, Pause, Replay and the slider drive it, and
+  // render(t) draws whatever time it is at. gsap.ticker drives the ambient motion (belts, rollers, gear, idle loop).
+  // GSAP is the page's only animation engine (the hero network and the report mock run on the same ticker).
+  var gsap = window.gsap;
+  if (!gsap) { render(0, 0); fig.classList.add('is-ready'); fig.querySelector('.belt-controls').hidden = true; return; } // GSAP failed to load: show the still scene
+  var clockProxy = { t: 0 };
+  var master = gsap.timeline({ paused: true, onComplete: function () { t = DURATION; render(t, amb); setPlaying(false); } });
+  master.to(clockProxy, { t: DURATION, duration: DURATION, ease: 'none', onUpdate: function () { t = clockProxy.t; } }, 0);
+
+  // The six pipeline steps listed under the scene, and when the walkthrough reaches each one (seconds).
+  var STEP_TIMES = [3.2, 6.0, 9.5, 15.25, 18.6, 23.75], STEP_END = 26.5;
+  STEP_TIMES.forEach(function (s, i) { master.addLabel('step' + (i + 1), s); });
+  var stepItems = Array.prototype.slice.call(document.querySelectorAll('.steps .step'));
+  var currentStep = -1;
+  function markStep() {
+    var k = -1;
+    if (t > 0 && t < STEP_END) for (var i = 0; i < STEP_TIMES.length; i++) if (t >= STEP_TIMES[i]) k = i;
+    if (k === currentStep) return;
+    currentStep = k;
+    stepItems.forEach(function (li, i) { li.classList.toggle('is-current', i === k); });
+  }
+  // Each step gets a small "Watch" button that plays the walkthrough from that step.
+  stepItems.forEach(function (li, i) {
+    if (i >= STEP_TIMES.length) return;
+    var b = document.createElement('button');
+    b.type = 'button'; b.className = 'step-watch';
+    b.setAttribute('aria-label', 'Watch step ' + (i + 1) + ' in the walkthrough');
+    b.innerHTML = '<svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M4 2.5v11l9-5.5z" fill="currentColor"/></svg><span>Watch</span>';
+    b.addEventListener('click', function () {
+      master.seek('step' + (i + 1)); t = clockProxy.t; capIdx = -1; seekAudio(t);
+      setPlaying(true);
+      fig.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'center' });
+    });
+    li.appendChild(b);
+  });
 
   // ---------- sound ----------
   // The Flash video's own audio track (voice-over and music), timed 1:1 with the walkthrough.
@@ -807,40 +844,42 @@
     playBtn.setAttribute('aria-pressed', String(v));
     playBtn.querySelector('.belt-btn-label').textContent = v ? 'Pause' : (t >= DURATION ? 'Play again' : 'Play');
     fig.classList.toggle('is-playing', v);
-    if (v) { capIdx = -1; } else { render(t, amb); } // on stop, draw the rest state now (reduced motion has no next frame)
+    if (v) { capIdx = -1; } else { master.pause(); render(t, amb); } // on stop, draw the rest state now (reduced motion has no next tick)
     syncAudio();
     loop();
   }
   playBtn.addEventListener('click', function () {
-    if (!playing && t >= DURATION) t = 0;
+    if (!playing && t >= DURATION) { master.time(0); t = 0; }
     setPlaying(!playing);
   });
-  replayBtn.addEventListener('click', function () { t = 0; capIdx = -1; seekAudio(0); setPlaying(true); });
-  scrub.addEventListener('input', function () { t = Number(scrub.value) / 10; render(t, amb); seekAudio(t); });
+  replayBtn.addEventListener('click', function () { master.time(0); t = 0; capIdx = -1; seekAudio(0); setPlaying(true); });
+  scrub.addEventListener('input', function () { master.time(Number(scrub.value) / 10); t = clockProxy.t; render(t, amb); markStep(); seekAudio(t); });
   svg.addEventListener('click', function () { playBtn.click(); });
 
   function wanted() { return visible && !document.hidden && (playing || !reduceMotion); }
-  function frame(now) {
-    raf = 0;
-    var dt = last ? Math.min(0.1, (now - last) / 1000) : 0;
-    last = now;
+  function tick(time, deltaTime) {
+    var dt = Math.min(0.1, deltaTime / 1000);
     if (!reduceMotion || playing) amb += dt;
     if (playing) {
       if (audioLeads()) {
         // Follow the sound smoothly: up to half again as fast or half as slow; jump only if far apart.
-        var diff = audio.currentTime - t;
-        t = Math.abs(diff) > 1 ? audio.currentTime : t + dt * (1 + clamp(diff * 2, -0.5, 0.5));
+        var diff = audio.currentTime - master.time();
+        if (Math.abs(diff) > 1) master.time(audio.currentTime);
+        else master.timeScale(1 + clamp(diff * 2, -0.5, 0.5));
       } else {
-        t += dt;
+        master.timeScale(1);
       }
-      if (t >= DURATION) { t = DURATION; render(t, amb); last = 0; setPlaying(false); return; }
     }
     render(t, amb);
-    if (wanted()) raf = requestAnimationFrame(frame); else last = 0;
+    markStep();
   }
-  // Starts the frame loop when it should run and is not running (its first frame has no time step).
+  // Runs the ticker only while there is something to show, and holds the timeline while the scene is off screen.
+  var ticking = false;
   function loop() {
-    if (wanted() && !raf) { last = 0; raf = requestAnimationFrame(frame); }
+    var want = wanted();
+    if (want && !ticking) { gsap.ticker.add(tick); ticking = true; }
+    if (!want && ticking) { gsap.ticker.remove(tick); ticking = false; }
+    if (playing) { if (visible && !document.hidden) master.play(); else master.pause(); }
   }
   // Scrolled away or tab hidden: the walkthrough holds still, so the sound pauses with it.
   document.addEventListener('visibilitychange', function () { syncAudio(); loop(); });

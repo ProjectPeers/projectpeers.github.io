@@ -25,7 +25,9 @@
 
   if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
-  var STEP = 3200, active = 0, timer = 0, visible = true;
+  var STEP = 3.2, active = 0, visible = true;
+  var gsap = window.gsap;
+  if (!gsap) return; // GSAP failed to load: the report holds on its first row
 
   function show(i) {
     rows[active].classList.remove('is-active');
@@ -35,10 +37,12 @@
     slides[active].classList.add('is-on');
   }
   function tick() { show((active + 1) % rows.length); }
+  // A repeating GSAP timeline (the page's one animation engine) moves to the next row every 3.2 seconds.
+  var cycle = gsap.timeline({ repeat: -1, paused: true }).call(tick, null, STEP);
   function run() {
     var want = visible && !document.hidden;
-    if (want && !timer) timer = setInterval(tick, STEP);
-    if (!want && timer) { clearInterval(timer); timer = 0; }
+    if (want && cycle.paused()) cycle.play();
+    if (!want && !cycle.paused()) cycle.pause();
   }
   document.addEventListener('visibilitychange', run);
   if ('IntersectionObserver' in window) {

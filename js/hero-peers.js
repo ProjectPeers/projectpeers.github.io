@@ -124,16 +124,16 @@
   }
   var trend = 0;
 
-  // Frame loop: runs only while the hero is on screen and the tab is visible.
-  var visible = true, raf = 0, clock = 0, last = 0;
-  function frame(now) {
-    raf = 0;
-    if (last) clock += Math.min(0.1, (now - last) / 1000);
-    last = now;
-    render(clock);
-    if (visible && !document.hidden) raf = requestAnimationFrame(frame); else last = 0;
+  // Clock: GSAP's ticker (the page's one animation engine), running only while the hero is on screen and the tab is visible.
+  var gsap = window.gsap;
+  if (!gsap) { render(1.2); return; } // GSAP failed to load: a still frame
+  var visible = true, ticking = false, clock = 0;
+  function tick(time, deltaTime) { clock += Math.min(0.1, deltaTime / 1000); render(clock); }
+  function loop() {
+    var want = visible && !document.hidden;
+    if (want && !ticking) { gsap.ticker.add(tick); ticking = true; }
+    if (!want && ticking) { gsap.ticker.remove(tick); ticking = false; }
   }
-  function loop() { if (visible && !document.hidden && !raf) { last = 0; raf = requestAnimationFrame(frame); } }
   document.addEventListener('visibilitychange', loop);
   if ('IntersectionObserver' in window) {
     new IntersectionObserver(function (entries) { visible = entries[0].isIntersecting; loop(); }).observe(svg);

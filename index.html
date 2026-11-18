@@ -6,6 +6,15 @@
   <title>PEERS: Peer Evaluation System | KSU Capstone Team</title>
   <meta name="description" content="PEERS is a web platform for peer evaluations in team-based courses. Our KSU capstone team made it production-ready with automated testing, Docker and a CI/CD pipeline.">
   <meta name="theme-color" content="#0b1b2e">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="PEERS: Peer Evaluation System | KSU Capstone Team">
+  <meta property="og:description" content="PEERS is a web platform for peer evaluations in team-based courses. Our KSU capstone team made it production-ready with automated testing, Docker and a CI/CD pipeline.">
+  <meta property="og:url" content="https://projectpeers.github.io/">
+  <meta property="og:image" content="https://projectpeers.github.io/share.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="The PEERS website: the PEERS title beside the animated five-peer network">
+  <meta name="twitter:card" content="summary_large_image">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/pipeline-scene.css">
@@ -101,6 +110,7 @@
       <div class="container">
         <div class="about-grid">
           <div class="about-copy">
+            <p class="kicker" aria-hidden="true">01 · About</p>
             <h2 id="about-title">What PEERS does</h2>
             <p class="lead">
               Professors use PEERS to collect honest feedback from the members of a team, then review it
@@ -183,6 +193,7 @@
     <!-- OUR PROJECT -->
     <section class="section section-alt" id="project" aria-labelledby="project-title">
       <div class="container">
+        <p class="kicker" aria-hidden="true">02 · Our project</p>
         <h2 id="project-title">Our project: productionizing PEERS</h2>
         <p class="lead">
           The focus is not new features. It is turning the inherited app into a professionally
@@ -231,6 +242,7 @@
     <!-- PIPELINE -->
     <section class="section" id="pipeline" aria-labelledby="pipeline-title">
       <div class="container">
+        <p class="kicker" aria-hidden="true">03 · Pipeline</p>
         <h2 id="pipeline-title">From pull request to release</h2>
         <p class="lead">
           Every change reaches <code>main</code> through a pull request. The pipeline checks it,
@@ -238,6 +250,7 @@
         </p>
         <figure class="belt-scene" aria-labelledby="belt-title">
           <h3 class="visually-hidden" id="belt-title">Animated pipeline walkthrough</h3>
+          <div class="belt-panel">
           <div class="belt-stage">
             <svg role="img" aria-label="Animated conveyor belt: a code package moves from the developer through the pull request, CI checks, the quality gate, staging, smoke tests and production approval. The steps are described in the list below." focusable="false"></svg>
             <p class="belt-caption" aria-hidden="true" hidden></p>
@@ -260,6 +273,7 @@
             <label class="visually-hidden" for="belt-scrub">Walkthrough position</label>
             <input class="belt-scrub" id="belt-scrub" type="range" min="0" max="300" step="1" value="0" data-belt="scrub">
             <span class="belt-time" aria-hidden="true">0:00 / 0:30</span>
+          </div>
           </div>
           <p class="belt-hint">A 30-second walkthrough of how one change travels through the pipeline. The same steps are listed below.</p>
           <p class="visually-hidden belt-live" aria-live="polite"></p>
@@ -305,6 +319,7 @@
     <!-- TEAM -->
     <section class="section" id="team" aria-labelledby="team-title">
       <div class="container">
+        <p class="kicker" aria-hidden="true">04 · Team</p>
         <h2 id="team-title">The team</h2>
         <p class="lead">Five students, one project.</p>
         <ul class="cards cards-team">
@@ -349,6 +364,7 @@
     <!-- REPOSITORY -->
     <section class="section section-alt" id="repository" aria-labelledby="repo-title">
       <div class="container">
+        <p class="kicker" aria-hidden="true">05 · Repository</p>
         <h2 id="repo-title">Repository and documentation</h2>
         <p class="lead">Everything we built is public on GitHub.</p>
         <ul class="cards cards-3 link-cards">
@@ -382,6 +398,7 @@
     </div>
   </footer>
 
+  <script src="js/vendor/gsap.min.js"></script>
   <script src="js/main.js"></script>
   <script src="js/hero-peers.js"></script>
   <script src="js/about-report.js"></script>
