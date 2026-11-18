@@ -20,7 +20,6 @@
   var stripes = runner.querySelector('.run-stripes');
   var head = runner.querySelector('.run-head');
   var pct = runner.querySelector('.run-pct');
-  var ticks = runner.querySelector('.run-ticks');
   var summary = runner.querySelector('.run-summary');
   if (!passes.length || !fill || !pct) return;
 
@@ -28,7 +27,6 @@
   var SHARES = [8, 19, 13, 17, 15, 11, 17].slice(0, passes.length);
   var sum = SHARES.reduce(function (a, b) { return a + b; }, 0);
   var marks = []; SHARES.reduce(function (acc, v) { acc += v * 100 / sum; marks.push(acc); return acc; }, 0);
-  if (ticks) marks.slice(0, -1).forEach(function (m) { var i = document.createElement('i'); i.style.left = m.toFixed(2) + '%'; ticks.appendChild(i); });
 
   runner.classList.add('is-done');   // the finished look, until the run starts
   if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
@@ -66,20 +64,23 @@
     tl.to(shown, { v: 0, duration: 0.9, ease: 'power2.inOut', onUpdate: showPct }, 0.05);
     return 1.1;
   }
-  // run: spinner, then checkmark and the meter step, goal by goal
+  // run: spinner, then checkmark, goal by goal. The meter creeps forward the whole time: while a goal's
+  // spinner turns (and in the short pause after its check) it travels steadily to that goal's mark,
+  // so it never jumps.
   function run(tl, at) {
     passes.forEach(function (b, i) {
-      var spinFor = rand(0.4, 0.75), spinner = null;
+      var spinFor = rand(0.4, 0.75), gap = rand(0.16, 0.3), spinner = null, start = at;
       tl.call(function () { spinner = spin(icon(b, SPIN)); }, null, at);
       at += spinFor;
       tl.call(function () {
         if (spinner) spinner.kill();
         gsap.from(icon(b, CHECK), { scale: 0.4, opacity: 0, duration: 0.25, ease: 'back.out(2.2)', transformOrigin: '50% 50%' });
       }, null, at);
-      tl.to(fill, { width: marks[i].toFixed(2) + '%', duration: 0.35, ease: 'power2.out' }, at);
-      tl.to(head, { left: marks[i].toFixed(2) + '%', duration: 0.35, ease: 'power2.out' }, at);
-      tl.to(shown, { v: marks[i], duration: 0.35, ease: 'power2.out', onUpdate: showPct }, at);
-      at += rand(0.16, 0.3);
+      var span = spinFor + gap, last = i === passes.length - 1, ease = last ? 'power1.out' : 'none';
+      tl.to(fill, { width: marks[i].toFixed(2) + '%', duration: span, ease: ease }, start);
+      tl.to(head, { left: marks[i].toFixed(2) + '%', duration: span, ease: ease }, start);
+      tl.to(shown, { v: marks[i], duration: span, ease: ease, onUpdate: showPct }, start);
+      at += gap;
     });
     return at;
   }
