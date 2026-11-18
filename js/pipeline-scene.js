@@ -371,25 +371,50 @@
   })();
 
   // ---------- the crew (idle loop only) ----------
-  // Small engineers in hard hats and hi-vis vests, drawn in the scene's flat style. Each is built standing on its own
-  // feet at (0, 0) in screen units and placed on the floor with iso(). Poses: 'tablet' (checks an iPad), 'walk'
-  // (walks along the belt with a wrench on the shoulder), 'kneel' (fixes a cable at a junction box with a wrench).
-  var VEST = '#ff7a1a', STRIPE = '#eef3f8', PANTS = '#2c3e57', SHIRT = '#3b4b63', BOOT = '#16181c';
+  // Five small engineers (three men, two women) in hard hats and hi-vis vests, drawn in the scene's flat style, each
+  // with a different tool. Each is built standing on its own feet at (0, 0) in screen units and placed with iso().
+  // Poses: 'look' (inspects with a magnifying glass), 'tablet' (checks an iPad), 'walk' (walks with a wrench),
+  // 'kneel' (fixes a cable with pliers), 'radio' (talks on a walkie-talkie).
+  var VEST = '#ff7a1a', STRIPE = '#eef3f8', PANTS = '#2c3e57', SHIRT = '#3b4b63', BOOT = '#16181c', STEEL = '#8f98a3';
   var gCrew = el('g', { opacity: 0 }, gFront);   // added last in the front layer: every spot is in front of what is near it
-  function wrenchShape(parent) {
-    var w = el('g', null, parent);
-    el('path', { d: 'M0 0 L13 0', stroke: '#8f98a3', 'stroke-width': 2.6, 'stroke-linecap': 'round' }, w);
-    el('path', { d: 'M12 -3.2 A3.4 3.4 0 1 1 12 3.2', fill: 'none', stroke: '#8f98a3', 'stroke-width': 2.4, 'stroke-linecap': 'round' }, w);
-    el('path', { d: 'M0 0 L13 0', stroke: INK, 'stroke-width': 0.7, opacity: 0.45 }, w);
-    return w;
+  // The barrier operator's control pendant: a yellow box with a green (open) and a red (close) button.
+  function pendantShape(parent) {
+    var p = el('g', null, parent);
+    el('rect', { x: -3.2, y: -5.5, width: 6.4, height: 10, rx: 1.4, fill: GOLD, stroke: INK, 'stroke-width': 0.9 }, p);
+    p.green = el('circle', { cx: 0, cy: -2.3, r: 1.5, fill: '#1f5c38', stroke: INK, 'stroke-width': 0.5 }, p);
+    p.red = el('circle', { cx: 0, cy: 1.8, r: 1.5, fill: '#6b2226', stroke: INK, 'stroke-width': 0.5 }, p);
+    return p;
   }
-  function engineer(x, y, pose, skin, hat, scale, flip) {
-    var at = iso(x, y, 0);
+  function magnifierShape(parent) {
+    var m = el('g', null, parent);
+    el('path', { d: 'M0 0 L7 0', stroke: '#5a3a22', 'stroke-width': 2.6, 'stroke-linecap': 'round' }, m);
+    el('circle', { cx: 12, cy: 0, r: 5, fill: 'rgba(170, 220, 255, .45)', stroke: INK, 'stroke-width': 1.6 }, m);
+    el('path', { d: 'M9.6 -2.4 A3 3 0 0 1 12.6 -3.4', fill: 'none', stroke: '#fff', 'stroke-width': 1, 'stroke-linecap': 'round' }, m);
+    return m;
+  }
+  function pliersShape(parent) {
+    var p = el('g', null, parent);
+    p.gripA = el('path', { d: 'M0 -1.6 L9 -0.6', stroke: RED, 'stroke-width': 2.4, 'stroke-linecap': 'round' }, p);
+    p.gripB = el('path', { d: 'M0 1.6 L9 0.6', stroke: RED, 'stroke-width': 2.4, 'stroke-linecap': 'round' }, p);
+    el('circle', { cx: 9.4, cy: 0, r: 1.3, fill: STEEL, stroke: INK, 'stroke-width': 0.6 }, p);
+    el('path', { d: 'M9.4 0 L15 -1.2 L15 1.2 Z', fill: STEEL, stroke: INK, 'stroke-width': 0.6, 'stroke-linejoin': 'round' }, p);
+    return p;
+  }
+  function radioShape(parent) {
+    var r = el('g', null, parent);
+    el('rect', { x: -2.6, y: -6, width: 5.2, height: 9, rx: 1.2, fill: '#1b1f26', stroke: INK, 'stroke-width': 0.8 }, r);
+    el('path', { d: 'M1.4 -6 L1.4 -10.5', stroke: INK, 'stroke-width': 1.2, 'stroke-linecap': 'round' }, r);
+    el('circle', { cx: 0, cy: -3.6, r: 0.9, fill: '#3ddc84' }, r);
+    return r;
+  }
+  function engineer(x, y, z, pose, opt) {
+    var at = iso(x, y, z), scale = opt.scale || 0.95;
     var root = el('g', { transform: 'translate(' + at[0].toFixed(1) + ' ' + at[1].toFixed(1) + ')' }, gCrew);
-    var body = el('g', { transform: 'scale(' + (flip ? -scale : scale) + ' ' + scale + ')' }, root);
-    var o = { root: root, body: body, pose: pose, x: x, y: y, scale: scale, flip: flip };
+    var body = el('g', { transform: 'scale(' + (opt.flip ? -scale : scale) + ' ' + scale + ')' }, root);
+    var o = { root: root, body: body, pose: pose, x: x, y: y, scale: scale, flip: !!opt.flip };
+    var skin = opt.skin, hat = opt.hat;
     var line = { stroke: INK, 'stroke-width': 1.2, 'stroke-linejoin': 'round' };
-    el('ellipse', { cx: 0, cy: 0, rx: 11, ry: 3.6, fill: 'rgba(22,24,28,.18)' }, body);
+    el('ellipse', { cx: 0, cy: 0, rx: z > 0 ? 6 : 11, ry: z > 0 ? 2 : 3.6, fill: 'rgba(22,24,28,.18)' }, body);
     var up = el('g', null, body);   // everything above the hips (lowered when kneeling)
     o.up = up;
     if (pose === 'kneel') {
@@ -405,7 +430,7 @@
         el('rect', { x: lx - 0.8, y: -2.6, width: 6.2, height: 3.2, rx: 1, fill: BOOT }, lg);
       });
     }
-    // back arm (drawn behind the torso)
+    // back arm (behind the torso)
     o.armB = el('g', { transform: 'translate(-5 -30)' }, up);
     el('rect', Object.assign({ x: -2, y: 0, width: 4, height: 13, rx: 2, fill: SHIRT }, line), o.armB);
     el('circle', { cx: 0, cy: 13.5, r: 2.3, fill: skin, stroke: INK, 'stroke-width': 1 }, o.armB);
@@ -414,32 +439,45 @@
     el('path', Object.assign({ d: 'M-8 -15 L-8 -27 Q-8 -33 -2.5 -33 L-1.2 -33 L0 -27 L1.2 -33 L2.5 -33 Q8 -33 8 -27 L8 -15 Z', fill: VEST }, line), up);
     el('rect', { x: -7.4, y: -23.5, width: 14.8, height: 2.2, fill: STRIPE }, up);
     el('rect', { x: -7.4, y: -19.5, width: 14.8, height: 2.2, fill: STRIPE }, up);
-    // head and hard hat
+    // head: a ponytail out from under the hard hat for the women, then the face and the hat
     o.head = el('g', null, up);
+    if (opt.female) el('path', Object.assign({ d: 'M-3.5 -42 Q-12 -41 -11 -30 Q-8.5 -32.5 -5 -35.5 Z', fill: opt.hair || '#3a2416' }, line), o.head);
     el('circle', { cx: 0, cy: -38, r: 5.6, fill: skin, stroke: INK, 'stroke-width': 1.2 }, o.head);
     el('path', Object.assign({ d: 'M-6.6 -39.6 A6.6 6.6 0 0 1 6.6 -39.6 Z', fill: hat }, line), o.head);
     el('path', { d: 'M-8.6 -39.6 L9.2 -39.6', stroke: INK, 'stroke-width': 2.6, 'stroke-linecap': 'round' }, o.head);
     el('path', { d: 'M-8.2 -39.6 L8.8 -39.6', stroke: hat, 'stroke-width': 1.2, 'stroke-linecap': 'round' }, o.head);
     el('path', { d: 'M0 -46 L0 -41', stroke: INK, 'stroke-width': 0.9, opacity: 0.5 }, o.head);
-    // front arm and what the hand holds
+    // front arm
     o.armF = el('g', { transform: 'translate(5 -30)' }, up);
     el('rect', Object.assign({ x: -2, y: 0, width: 4, height: 13, rx: 2, fill: SHIRT }, line), o.armF);
     el('circle', { cx: 0, cy: 13.5, r: 2.3, fill: skin, stroke: INK, 'stroke-width': 1 }, o.armF);
+    // the tool for the pose
     if (pose === 'tablet') {
-      // both forearms forward, the tablet held in front of the chest
       o.armB.setAttribute('transform', 'translate(-5 -30) rotate(-70)');
       o.armF.setAttribute('transform', 'translate(5 -30) rotate(-55)');
       o.tablet = el('g', { transform: 'translate(10 -27) rotate(-14)' }, up);
       el('rect', { x: -1, y: -6, width: 14, height: 10, rx: 1.6, fill: '#1b1f26', stroke: INK, 'stroke-width': 1 }, o.tablet);
       el('rect', { x: 0.6, y: -4.6, width: 10.8, height: 7.2, rx: 0.8, fill: '#13324f' }, o.tablet);
       o.bars = [0, 1, 2, 3].map(function (k) { return el('rect', { x: 1.8 + k * 2.6, y: 1.6, width: 1.7, height: 1, fill: k === 3 ? GOLD : '#3ddc84' }, o.tablet); });
-    } else if (pose === 'walk') {
-      // wrench carried in the hand, pointing down
-      var w = wrenchShape(o.armF); w.setAttribute('transform', 'translate(0.5 14) rotate(80)');
+    } else if (pose === 'operate') {
+      // holds the barrier's control pendant at chest height; its cable runs down to the barrier post
+      o.armF.setAttribute('transform', 'translate(5 -30) rotate(-62)');
+      if (opt.cableTo) el('path', { d: 'M11 -16 Q' + ((11 + opt.cableTo[0]) / 2).toFixed(1) + ' -4 ' + opt.cableTo[0].toFixed(1) + ' ' + opt.cableTo[1].toFixed(1), fill: 'none', stroke: '#16181c', 'stroke-width': 1.3 }, up);
+      o.pendant = pendantShape(up); o.pendant.setAttribute('transform', 'translate(11 -21)');
     } else if (pose === 'kneel') {
       o.armB.setAttribute('transform', 'translate(-5 -30) rotate(-35)');
       o.armF.setAttribute('transform', 'translate(5 -30) rotate(-70)');
-      o.wrench = wrenchShape(up); o.wrench.setAttribute('transform', 'translate(16 -24)');
+      o.pliers = pliersShape(up); o.pliers.setAttribute('transform', 'translate(15 -23) rotate(20)');
+    } else if (pose === 'look') {
+      // magnifying glass held up toward the laptop screen
+      o.armF.setAttribute('transform', 'translate(5 -30) rotate(-138)');
+      var m = magnifierShape(o.armF); m.setAttribute('transform', 'translate(0 14) rotate(80)');
+    } else if (pose === 'radio') {
+      // walkie-talkie up at the ear, with signal arcs
+      o.armF.setAttribute('transform', 'translate(5 -30) rotate(-160)');
+      var r = radioShape(o.armF); r.setAttribute('transform', 'translate(0 15) rotate(160)');
+      o.signal = el('g', { transform: 'translate(9 -46)' }, up);
+      [4, 7].forEach(function (rad) { el('path', { d: 'M0 ' + (-rad) + ' A' + rad + ' ' + rad + ' 0 0 1 ' + rad + ' 0', fill: 'none', stroke: '#3ddc84', 'stroke-width': 1.3, 'stroke-linecap': 'round' }, o.signal); });
     }
     return o;
   }
@@ -452,10 +490,20 @@
     el('circle', { cx: led[0], cy: led[1], r: 1.6, fill: '#3ddc84' }, jb);
   })();
   var crew = [
-    engineer(8.4, -3.5, 'tablet', '#f1c7a3', '#fdbb30', 0.95, false),    // at the quality gate, checking the checks
-    engineer(3.0, 1.9, 'walk', '#8d5a3b', '#ffffff', 0.95, false),        // walking along the first belt
-    engineer(15.9, -9.9, 'kneel', '#c68b59', '#fdbb30', 0.95, false),     // fixing the cable at the junction box
-    engineer(24.0, -15.9, 'tablet', '#c68b59', '#ffffff', 0.95, false)    // by the rocket, checking the launch
+    // on the little white box in front of the giant laptop, reviewing the code on its screen with a magnifying glass
+    engineer(-0.26, -2.01, 1.13, 'look', { skin: '#e0ac85', hat: '#fdbb30', flip: true, scale: 0.85 }),
+    // at the quality gate, checking the checks on an iPad
+    engineer(8.4, -3.5, 0, 'tablet', { skin: '#f1c7a3', hat: '#ffffff', female: true, hair: '#6b3e1e' }),
+    // walking along the first belt with a wrench
+    // beside the quality-gate barrier, opening and closing it with a control pendant (cable to the post's base)
+    engineer(12.45, -4.45, 0, 'operate', { skin: '#8d5a3b', hat: '#ffffff', flip: true, cableTo: (function () {
+      var post = iso(11.02, -4.8, 0.2), me = iso(12.45, -4.45, 0);
+      return [-(post[0] - me[0]) / 0.95, (post[1] - me[1]) / 0.95];   // in his own (mirrored, scaled) units
+    })() }),
+    // kneeling at the junction box, fixing the motor's cable with pliers
+    engineer(15.9, -9.9, 0, 'kneel', { skin: '#c68b59', hat: '#fdbb30', female: true, hair: '#1f140d' }),
+    // by the rocket, on the walkie-talkie for the launch
+    engineer(24.0, -15.9, 0, 'radio', { skin: '#5c3a24', hat: '#fdbb30' })
   ];
   // Moves the crew for ambient time a (seconds). Small, looping motions only.
   function animateCrew(a) {
@@ -467,22 +515,29 @@
           var hgt = 1.2 + 3.6 * (0.5 + 0.5 * Math.sin(a * 1.7 + j * 1.1 + k));
           b.setAttribute('y', (2.6 - hgt).toFixed(2)); b.setAttribute('height', hgt.toFixed(2));
         });
-      } else if (c.pose === 'walk') {
-        // back and forth along the front of the first belt, turning at each end
-        var span = 3.2, speed = 0.55, ph = (a * speed) % (2 * span), dir = ph < span ? 1 : -1;
-        var px = c.x - span / 2 + (dir > 0 ? ph : 2 * span - ph);
-        var at = iso(px, c.y, 0), step = Math.sin(a * 7);
-        c.root.setAttribute('transform', 'translate(' + at[0].toFixed(1) + ' ' + (at[1] - Math.abs(step) * 0.8).toFixed(1) + ')');
-        c.body.setAttribute('transform', 'scale(' + (dir > 0 ? c.scale : -c.scale) + ' ' + c.scale + ')');
-        c.legB.setAttribute('transform', 'rotate(' + (step * 20).toFixed(1) + ' -3 -16)');
-        c.legF.setAttribute('transform', 'rotate(' + (-step * 20).toFixed(1) + ' 3 -16)');
-        c.armB.setAttribute('transform', 'translate(-5 -30) rotate(' + (step * 18).toFixed(1) + ')');
-        c.armF.setAttribute('transform', 'translate(5 -30) rotate(' + (-step * 14).toFixed(1) + ')');
+      } else if (c.pose === 'operate') {
+        // presses green while the barrier opens and red while it closes; the lit button shows its state
+        var moving = barrierOpen - (c.lastOpen === undefined ? barrierOpen : c.lastOpen);
+        c.lastOpen = barrierOpen;
+        var press = Math.abs(moving) > 0.0005 ? 1 : 0;
+        c.armF.setAttribute('transform', 'translate(5 -30) rotate(' + (-62 + press * 5).toFixed(1) + ')');
+        c.pendant.green.setAttribute('fill', barrierOpen > 0.5 ? '#3ddc84' : '#1f5c38');
+        c.pendant.red.setAttribute('fill', barrierOpen > 0.5 ? '#6b2226' : '#ff5c5c');
+        c.head.setAttribute('transform', 'rotate(' + (-4 - barrierOpen * 8).toFixed(2) + ' 0 -33)');   // looks up as the arm rises
       } else if (c.pose === 'kneel') {
-        var turn = Math.sin(a * 4.2);
-        c.wrench.setAttribute('transform', 'translate(16 -24) rotate(' + (25 + turn * 28).toFixed(1) + ')');
-        c.armF.setAttribute('transform', 'translate(5 -30) rotate(' + (-70 + turn * 10).toFixed(1) + ')');
+        var squeeze = Math.max(0, Math.sin(a * 3.6));
+        c.pliers.gripA.setAttribute('transform', 'rotate(' + (squeeze * 7).toFixed(1) + ' 9.4 0)');
+        c.pliers.gripB.setAttribute('transform', 'rotate(' + (-squeeze * 7).toFixed(1) + ' 9.4 0)');
+        c.armF.setAttribute('transform', 'translate(5 -30) rotate(' + (-70 + squeeze * 6).toFixed(1) + ')');
         c.head.setAttribute('transform', 'rotate(10 0 -33)');
+      } else if (c.pose === 'look') {
+        // sweeps the magnifying glass slowly across the screen
+        var sweep = Math.sin(a * 0.9);
+        c.armF.setAttribute('transform', 'translate(5 -30) rotate(' + (-138 + sweep * 10).toFixed(1) + ')');
+        c.head.setAttribute('transform', 'rotate(' + (-6 + sweep * 4).toFixed(2) + ' 0 -33)');
+      } else if (c.pose === 'radio') {
+        c.signal.setAttribute('opacity', (0.5 + 0.5 * Math.sin(a * 6)).toFixed(2));
+        c.head.setAttribute('transform', 'rotate(' + (Math.sin(a * 2.2) * 3).toFixed(2) + ' 0 -33)');
       }
     });
   }
@@ -755,7 +810,9 @@
   function arcPoint(a, p) { var L = a.path.getTotalLength(); return a.path.getPointAtLength(L * clamp(p, 0, 1)); }
 
   // ---------- station setters shared by the walkthrough and the idle loop ----------
+  var barrierOpen = 0;   // last drawn opening of the barrier (0 shut, 1 up), read by the barrier operator
   function setArm(open) {
+    barrierOpen = clamp(open, 0, 1);
     var pivot = [11.02, -4.8], ang = clamp(open, 0, 1) * Math.PI / 2 * 0.95;
     var a0 = iso(pivot[0], pivot[1], 1.2), a1 = iso(pivot[0], pivot[1] - 2.5 * Math.cos(ang), 1.2 + 2.5 * Math.sin(ang));
     [arm, arm.armDash].forEach(function (l) { l.setAttribute('x1', a0[0]); l.setAttribute('y1', a0[1]); l.setAttribute('x2', a1[0].toFixed(1)); l.setAttribute('y2', a1[1].toFixed(1)); });
