@@ -240,6 +240,14 @@
   document.addEventListener('click', function (e) {
     if (open && !open.contains(e.target)) close();
   });
+  // Scrolled away: once the open card is wholly off screen it closes, so the cards are back in their
+  // original state when the reader returns.
+  if ('IntersectionObserver' in window) {
+    var watch = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) { if (en.target === open && !en.isIntersecting) close(); });
+    });
+    cards.forEach(function (c) { watch.observe(c); });
+  }
   document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape' && open) {
       var btn = open.querySelector('.person-toggle');
