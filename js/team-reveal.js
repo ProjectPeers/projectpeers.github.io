@@ -5,10 +5,11 @@
    Without JS the detail is always shown; with reduced motion it simply appears. */
 (function () {
   'use strict';
-  // list: the group; card: one card; mark: where the dust bursts from; hintAfter: the hint goes after this;
+  // list: the group; card: one card; mark: where the dust bursts from; hintAfter: a card with data-hint gets a pill after this;
+  // invite: the cards invite a click with motion (a "+", a hover spotlight, a wave) instead of a label;
   // float: on wide screens the open card floats over the row below instead of pushing it down.
   var GROUPS = [
-    { list: '.cards-team', card: '.person', mark: '.avatar', hintAfter: '.role', float: true },
+    { list: '.cards-team', card: '.person', mark: '.avatar', invite: true, float: true },
     { list: '.mentors', card: '.mentor', mark: '.mentor-mark', hintAfter: '.mentor-org', float: false, equal: true }
   ];
   GROUPS.forEach(setup);
@@ -220,20 +221,63 @@
     }
   }
 
-  // A small hint under each role; "Tap" on touch screens. Hidden while the card is open.
-  var touch = window.matchMedia('(hover: none)').matches;
+  // The mentor cards carry a small pill (data-hint, e.g. "Meet our sponsor"), hidden while the card is open.
   cards.forEach(function (card) {
+    if (!cfg.hintAfter || !card.dataset.hint) return;
     var hint = document.createElement('span');
     hint.className = 'person-hint';
     hint.setAttribute('aria-hidden', 'true');
-    // a card may carry its own wording (data-hint), e.g. "Meet our sponsor"
-    hint.innerHTML = '<span class="person-hint-dot"></span>' + (card.dataset.hint || ((touch ? 'Tap' : 'Click') + ' to explore'));
+    hint.innerHTML = '<span class="person-hint-dot"></span>' + card.dataset.hint;
     card.querySelector(cfg.hintAfter).insertAdjacentElement('afterend', hint);
   });
+
+  // The team cards have no label telling the reader to click. They invite it instead (css .js .person::before / .mentor::after):
+  // a gold "+" in the corner, a spotlight that follows the pointer, and, until the reader first touches
+  // a card, a soft wave that lifts the cards one after another every few seconds (.is-beckon).
+  var beckoning = !reduce && !!cfg.invite;
+  var seen = false;       // the group is on screen
+  var timer = null;
+  function beckon() {
+    clearTimeout(timer);
+    if (!beckoning || !seen) { timer = null; return; }
+    if (open || document.hidden) { timer = setTimeout(beckon, 2000); return; }
+    cards.forEach(function (card, i) {
+      setTimeout(function () {
+        card.classList.remove('is-beckon');
+        void card.offsetWidth;
+        card.classList.add('is-beckon');
+      }, i * 170);
+    });
+    timer = setTimeout(beckon, 7000);
+  }
+  function learned() {
+    if (!beckoning) return;
+    beckoning = false;
+    clearTimeout(timer);
+    cards.forEach(function (c) { c.classList.remove('is-beckon'); });
+  }
+  if (cfg.invite) cards.forEach(function (card) {
+    card.addEventListener('animationend', function (e) { if (e.animationName === 'beckon') card.classList.remove('is-beckon'); });
+    card.addEventListener('pointerenter', function (e) { if (e.pointerType !== 'touch') learned(); });
+    card.addEventListener('focusin', learned);
+    card.addEventListener('pointermove', function (e) {
+      var r = card.getBoundingClientRect();
+      card.style.setProperty('--mx', (e.clientX - r.left) + 'px');
+      card.style.setProperty('--my', (e.clientY - r.top) + 'px');
+    });
+  });
+  if (cfg.invite && 'IntersectionObserver' in window && !reduce) {
+    new IntersectionObserver(function (entries) {
+      seen = entries[entries.length - 1].isIntersecting;
+      clearTimeout(timer);
+      if (seen && beckoning) timer = setTimeout(beckon, 900);
+    }, { threshold: 0.25 }).observe(list);
+  }
 
   cards.forEach(function (card) {
     card.querySelector('.person-toggle').addEventListener('click', function (e) {
       e.stopPropagation();
+      learned();
       show(card);
     });
   });
