@@ -425,16 +425,17 @@ p { margin: 0 0 1rem; }
 .chip-icon { width: 1rem; height: 1rem; flex: none; }
 
 /* Pipeline: the six steps sit on a vertical track. Each has an icon station on the rail; the rail fills
-   with gold as the reader scrolls (js/scroll-story.js sets --fill) and each station lights once reached. */
+   with gold as the reader scrolls (js/scroll-story.js sets --fill) and each station lights once reached.
+   The rail is the only gold line: the cards keep a plain border, so progress reads from the rail and stations. */
 .steps { position: relative; isolation: isolate; display: grid; gap: .9rem; padding-left: 4.25rem; --fill: 1; }   /* full rail without JS */
 .steps::before, .steps::after {
-  content: ""; position: absolute; z-index: -1; left: 1.55rem; top: 1.6rem; bottom: 1.6rem; width: 3px; border-radius: 3px;
+  content: ""; position: absolute; z-index: -1; left: calc(3.35rem / 2 - .5px); top: 1.6rem; bottom: 1.6rem; width: 3px; border-radius: 3px;   /* centred on the 3.35rem station: half its width, plus the card's 1px border, minus half the 3px rail */
 }
 .steps::before { background: var(--line); }
 .steps::after { background: linear-gradient(var(--gold), #ffd067); transform-origin: top; transform: scaleY(var(--fill)); }
 .step {
   position: relative; display: grid; grid-template-columns: minmax(13rem, 17rem) 1fr; column-gap: 2rem; align-items: start;
-  background: var(--surface); border: 1px solid var(--line); border-left: 3px solid var(--line-strong);
+  background: var(--surface); border: 1px solid var(--line);
   border-radius: var(--radius); padding: 1.15rem 8rem 1.15rem 1.4rem;
 }
 .step h3 { grid-column: 1; margin: .1rem 0 0; display: flex; align-items: baseline; gap: .6rem; }
@@ -453,9 +454,11 @@ p { margin: 0 0 1rem; }
 }
 .step-node svg { width: 1.45rem; height: 1.45rem; }
 .step.is-reached .step-node { border-color: var(--gold); color: var(--gold); box-shadow: 0 0 0 5px rgba(253, 187, 48, .12); }
-.step.is-reached { border-left-color: var(--gold); }
+/* While the track is scroll-driven (js/scroll-story.js adds .is-tracked), a step's pill stays grey until its station
+   lights, so gold always means "reached". Without JS or with reduced motion every pill is gold. */
+.steps.is-tracked .step:not(.is-reached):not(.is-current) .step-num { color: var(--subtle); border-color: var(--line-strong); }
 .step:hover .step-node { transform: scale(1.08); }
-.step-human { background: var(--surface-2); border-left-color: var(--gold); }
+.step-human { background: var(--surface-2); }
 .step-human .step-node { border-style: dashed; }
 .note { margin-top: 1.5rem; margin-bottom: 0; }
 
@@ -523,7 +526,7 @@ p { margin: 0 0 1rem; }
 }
 @media (max-width: 600px) {
   .steps { padding-left: 3.1rem; }
-  .steps::before, .steps::after { left: 1.05rem; }
+  .steps::before, .steps::after { left: calc(2.5rem / 2 - .5px); }   /* centred on the 2.5rem station (see above) */
   .step-node { left: -3.1rem; width: 2.5rem; height: 2.5rem; }
   .step-node svg { width: 1.15rem; height: 1.15rem; }
   .step-num { margin-right: 0; }

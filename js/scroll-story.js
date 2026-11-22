@@ -19,6 +19,7 @@
     stations.forEach(function (s) { s.classList.add('is-reached'); });
   } else if (steps) {
     steps.style.setProperty('--fill', 0);
+    steps.classList.add('is-tracked');   // pills stay grey until their station is reached (css)
     gsap.to(steps, {
       '--fill': 1, ease: 'none',
       scrollTrigger: { trigger: steps, start: 'top 70%', end: 'bottom 60%', scrub: 0.5 }
