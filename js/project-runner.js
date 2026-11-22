@@ -8,6 +8,11 @@
 //   rewind: the PASS badges fade back to empty rings from the bottom up while the meter drains to 0%; then it runs again.
 // Everything lives in one parent timeline, which pauses while the console is off screen or the tab is hidden and
 // resumes from the same moment.
+//
+// On phones the meter is a vertical rail through the check column instead of the bar at the bottom (css: .run-rail).
+// The rail runs from the top of the list to the last check, and at each goal's mark the fill reaches that goal's
+// check, so it moves down the column with the run. The percentage then sits in the panel header (.run-vpct).
+// One value (shown.v, 0 to 100) drives both the bar and the rail.
 (function () {
   'use strict';
 
@@ -28,6 +33,65 @@
   var sum = SHARES.reduce(function (a, b) { return a + b; }, 0);
   var marks = []; SHARES.reduce(function (acc, v) { acc += v * 100 / sum; marks.push(acc); return acc; }, 0);
 
+  // The phone rail: added to the goals column, measured from layout (offsets, so reveal transforms don't skew it).
+  var list = passes[0].closest('.run-list');
+  var col = list.parentNode;
+  col.classList.add('run-goals');
+  var rail = document.createElement('span');
+  rail.className = 'run-rail';
+  rail.setAttribute('aria-hidden', 'true');
+  rail.innerHTML = '<span class="run-vfill"></span><span class="run-vhead"></span>';
+  col.appendChild(rail);
+  var vfill = rail.firstChild, vhead = rail.lastChild;
+  var vpct = document.createElement('span');
+  vpct.className = 'run-vpct';
+  vpct.setAttribute('aria-hidden', 'true');
+  var title = col.querySelector('h3');
+  if (title) title.appendChild(vpct);
+  runner.classList.add('has-rail');
+
+  var stops = null;   // rail lengths in px: [0, centre of check 1, ..., centre of the last check]
+  function measure() {
+    if (!rail.offsetParent) { stops = null; return; }   // the rail is hidden above phone width
+    var top = list.offsetTop;
+    stops = [0].concat(passes.map(function (b) { return b.offsetTop + b.offsetHeight / 2 - top; }));
+    rail.style.top = top + 'px';
+    rail.style.left = (passes[0].offsetLeft + passes[0].offsetWidth / 2) + 'px';
+    rail.style.height = stops[stops.length - 1] + 'px';
+  }
+  function railAt(v) {
+    if (!stops) return 0;
+    var prev = 0;
+    for (var i = 0; i < marks.length; i++) {
+      if (v <= marks[i] + 1e-6) {
+        var f = (v - prev) / ((marks[i] - prev) || 1);
+        return stops[i] + Math.max(0, f) * (stops[i + 1] - stops[i]);
+      }
+      prev = marks[i];
+    }
+    return stops[stops.length - 1];
+  }
+
+  var shown = { v: 100 };
+  function render() {
+    var v = shown.v, label = Math.round(v) + '%', y = railAt(v);
+    fill.style.width = v.toFixed(2) + '%';
+    if (head) head.style.left = v.toFixed(2) + '%';
+    pct.textContent = label;
+    vpct.textContent = label;
+    vfill.style.height = y.toFixed(1) + 'px';
+    vhead.style.top = y.toFixed(1) + 'px';
+  }
+  var queued = false;
+  function relayout() {
+    if (queued) return;
+    queued = true;
+    requestAnimationFrame(function () { queued = false; measure(); render(); });
+  }
+  measure(); render();
+  window.addEventListener('resize', relayout);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(relayout);
+
   runner.classList.add('is-done');   // the finished look, until the run starts
   if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
@@ -38,8 +102,7 @@
 
   function icon(b, html) { b.classList.add('is-icon'); b.innerHTML = html; return b.querySelector('svg'); }
   function passBadge(b) { b.classList.remove('is-icon'); b.textContent = 'PASS'; }
-  var shown = { v: 100 };
-  function showPct() { pct.textContent = Math.round(shown.v) + '%'; }
+  var heads = [stripes, head, vhead].filter(Boolean);
 
   // One parent timeline holds everything (runs, spinners, holds), so pausing it pauses the whole section.
   var root = gsap.timeline({ paused: true });
@@ -54,14 +117,12 @@
     tl.call(function () {
       runner.classList.remove('is-done');
       if (summary) summary.textContent = label;
-      gsap.to([stripes, head], { opacity: 1, duration: 0.3 });
+      gsap.to(heads, { opacity: 1, duration: 0.3 });
     }, null, 0);
     passes.slice().reverse().forEach(function (b, k) {
       tl.call(function () { var s = icon(b, RING); gsap.from(s, { opacity: 0, scale: 0.6, duration: 0.25, transformOrigin: '50% 50%' }); }, null, 0.05 + k * 0.06);
     });
-    tl.to(fill, { width: '0%', duration: 0.9, ease: 'power2.inOut' }, 0.05);
-    tl.to(head, { left: '0%', duration: 0.9, ease: 'power2.inOut' }, 0.05);
-    tl.to(shown, { v: 0, duration: 0.9, ease: 'power2.inOut', onUpdate: showPct }, 0.05);
+    tl.to(shown, { v: 0, duration: 0.9, ease: 'power2.inOut', onUpdate: render }, 0.05);
     return 1.1;
   }
   // run: spinner, then checkmark, goal by goal. The meter creeps forward the whole time: while a goal's
@@ -77,9 +138,7 @@
         gsap.from(icon(b, CHECK), { scale: 0.4, opacity: 0, duration: 0.25, ease: 'back.out(2.2)', transformOrigin: '50% 50%' });
       }, null, at);
       var span = spinFor + gap, last = i === passes.length - 1, ease = last ? 'power1.out' : 'none';
-      tl.to(fill, { width: marks[i].toFixed(2) + '%', duration: span, ease: ease }, start);
-      tl.to(head, { left: marks[i].toFixed(2) + '%', duration: span, ease: ease }, start);
-      tl.to(shown, { v: marks[i], duration: span, ease: ease, onUpdate: showPct }, start);
+      tl.to(shown, { v: marks[i], duration: span, ease: ease, onUpdate: render }, start);
       at += gap;
     });
     return at;
@@ -92,10 +151,10 @@
     });
     at += passes.length * 0.07 + 0.1;
     tl.call(function () {
-      shown.v = 100; showPct();
-      gsap.to([stripes, head], { opacity: 0, duration: 0.3 });
+      shown.v = 100; render();
+      gsap.to(heads, { opacity: 0, duration: 0.3 });
       runner.classList.add('is-done');
-      gsap.fromTo(fill, { boxShadow: '0 0 0px rgba(61,220,132,0)' }, { boxShadow: '0 0 22px rgba(61,220,132,.9)', duration: 0.3, yoyo: true, repeat: 1, clearProps: 'boxShadow' });
+      gsap.fromTo([fill, vfill], { boxShadow: '0 0 0px rgba(61,220,132,0)' }, { boxShadow: '0 0 22px rgba(61,220,132,.9)', duration: 0.3, yoyo: true, repeat: 1, clearProps: 'boxShadow' });
       if (summary) summary.innerHTML = SUMMARY_DONE;
     }, null, at);
     return at;
@@ -105,7 +164,6 @@
   function cycle(first) {
     var tl = gsap.timeline({ onComplete: function () { addNow(gsap.delayedCall(HOLD, function () { cycle(false); })); } });
     // the page starts on the finished result, so even the first run begins by winding it back smoothly
-    gsap.set(head, { left: '100%' });
     var at = rewind(tl, first ? 'Running checks…' : 'Re-running checks…');
     at = run(tl, at);
     finish(tl, at);
