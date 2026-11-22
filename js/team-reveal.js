@@ -194,6 +194,26 @@
     open = null;
   }
 
+  // Opening a card scrolls the page, alongside the growth, so the whole open card can be read.
+  // Stacked cards (one column, i.e. phones): the card is centred in the space below the sticky header, so what is
+  // left shows the card above and the card below. Side by side: it only scrolls as far as needed for the card to fit.
+  // Either way its top never goes under the header, and a card taller than the screen is shown from its top.
+  var header = document.querySelector('.site-header');
+  function inView(card, finalH) {
+    var gap = 16;
+    var headerH = header ? header.offsetHeight : 0;
+    var room = window.innerHeight - headerH;
+    var top = card.getBoundingClientRect().top;
+    var stacked = cfg.equal ? !sideBySide.matches : !wide.matches;
+    var fits = finalH + 2 * gap <= room;
+    var dy;
+    if (!fits) dy = top - (headerH + gap);
+    else if (stacked) dy = top - (headerH + (room - finalH) / 2);
+    else if (top < headerH + gap) dy = top - (headerH + gap);
+    else dy = Math.max(0, top + finalH - (window.innerHeight - gap));
+    if (Math.abs(dy) > 4) window.scrollBy({ top: dy, behavior: reduce ? 'auto' : 'smooth' });
+  }
+
   function show(card) {
     if (open === card) { close(); return; }
     close();
@@ -208,6 +228,7 @@
     card.classList.add('is-open');
     card.querySelector('.person-toggle').setAttribute('aria-expanded', 'true');
     list.classList.add('has-open');
+    inView(card, target || card.offsetHeight);   // measured before the growth tween shrinks it back to 0
     if (target) {
       if (reduce || !hasGsap) card.style.height = target + 'px';
       else gsap.fromTo(card, { height: closedH }, { height: target, duration: .45, ease: 'power2.out' });
