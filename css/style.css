@@ -399,6 +399,13 @@ p { margin: 0 0 1rem; }
     position: absolute; left: 50%; top: 0; width: 9px; height: 9px; margin: -4.5px 0 0 -4.5px; border-radius: 50%;
     background: #fff; box-shadow: 0 0 10px 3px rgba(253, 187, 48, .8); opacity: 0;
   }
+  /* the percentage riding beside the dot while the run plays (faded in and out by the script) */
+  .run-vlabel {
+    position: absolute; right: 12px; top: 0; z-index: 2; transform: translateY(-50%); opacity: 0; white-space: nowrap;
+    padding: .05rem .2rem; border-radius: 4px; background: var(--surface);
+    font-family: var(--mono); font-size: .76rem; font-weight: 700; line-height: 1.3; color: #fff;
+    font-variant-numeric: tabular-nums; text-shadow: 0 0 8px rgba(253, 187, 48, .7);
+  }
   .runner.is-done .run-vfill { background: #3ddc84; box-shadow: 0 0 10px rgba(61, 220, 132, .55); }
   .runner.has-rail .run-goals .run-badge { position: relative; z-index: 1; }
   .runner.has-rail .run-goals .run-badge.is-icon::before {
@@ -409,7 +416,9 @@ p { margin: 0 0 1rem; }
   .runner.has-rail .run-goals > h3 { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; }
   .runner.has-rail .run-vpct {
     display: inline; font-size: .9rem; font-weight: 700; letter-spacing: 0; color: var(--ink); font-variant-numeric: tabular-nums;
+    transition: opacity .3s;
   }
+  .runner.has-rail:not(.is-done) .run-vpct { opacity: 0; }   /* while running, the number rides with the dot instead */
   .runner.is-done .run-vpct { color: #3ddc84; }
 }
 .chips-icons li { display: inline-flex; align-items: center; gap: .45rem; padding: .3rem .65rem; }

@@ -11,7 +11,8 @@
 //
 // On phones the meter is a vertical rail through the check column instead of the bar at the bottom (css: .run-rail).
 // The rail runs from the top of the list to the last check, and at each goal's mark the fill reaches that goal's
-// check, so it moves down the column with the run. The percentage then sits in the panel header (.run-vpct).
+// check, so it moves down the column with the run. While the run plays, the percentage rides beside the glowing
+// dot at the end of the fill (.run-vlabel); at rest it sits in the panel header (.run-vpct), green at 100%.
 // One value (shown.v, 0 to 100) drives both the bar and the rail.
 (function () {
   'use strict';
@@ -40,9 +41,9 @@
   var rail = document.createElement('span');
   rail.className = 'run-rail';
   rail.setAttribute('aria-hidden', 'true');
-  rail.innerHTML = '<span class="run-vfill"></span><span class="run-vhead"></span>';
+  rail.innerHTML = '<span class="run-vfill"></span><span class="run-vhead"></span><span class="run-vlabel"></span>';
   col.appendChild(rail);
-  var vfill = rail.firstChild, vhead = rail.lastChild;
+  var vfill = rail.querySelector('.run-vfill'), vhead = rail.querySelector('.run-vhead'), vlabel = rail.querySelector('.run-vlabel');
   var vpct = document.createElement('span');
   vpct.className = 'run-vpct';
   vpct.setAttribute('aria-hidden', 'true');
@@ -81,6 +82,8 @@
     vpct.textContent = label;
     vfill.style.height = y.toFixed(1) + 'px';
     vhead.style.top = y.toFixed(1) + 'px';
+    vlabel.style.top = y.toFixed(1) + 'px';
+    vlabel.textContent = label;
   }
   var queued = false;
   function relayout() {
@@ -102,7 +105,7 @@
 
   function icon(b, html) { b.classList.add('is-icon'); b.innerHTML = html; return b.querySelector('svg'); }
   function passBadge(b) { b.classList.remove('is-icon'); b.textContent = 'PASS'; }
-  var heads = [stripes, head, vhead].filter(Boolean);
+  var heads = [stripes, head, vhead, vlabel].filter(Boolean);   // shown while the run plays, faded once it is done
 
   // One parent timeline holds everything (runs, spinners, holds), so pausing it pauses the whole section.
   var root = gsap.timeline({ paused: true });
