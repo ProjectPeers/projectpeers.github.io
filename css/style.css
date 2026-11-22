@@ -119,6 +119,7 @@ p { margin: 0 0 1rem; }
 }
 .hero-inner { display: grid; grid-template-columns: 1.1fr .9fr; gap: 2rem; align-items: center; }
 .eyebrow { color: var(--gold); font-size: .9rem; letter-spacing: .06em; text-transform: uppercase; margin-bottom: 1rem; }
+.eyebrow-short { display: none; }
 .hero h1 { font-family: var(--serif); font-size: clamp(3.2rem, 11vw, 6rem); font-weight: 400; letter-spacing: .04em; }
 .hero-sub { font-family: var(--serif); font-size: clamp(1.3rem, 3.5vw, 1.8rem); color: var(--muted); margin: .25rem 0 1.25rem; }
 .hero-text { max-width: 34rem; font-size: 1.15rem; color: var(--muted); }
@@ -524,7 +525,16 @@ p { margin: 0 0 1rem; }
   .run-meter { flex-basis: 100%; }
 }
 @media (max-width: 760px) {
-  .hero-art { max-width: 190px; }
+  /* Phone hero: less empty space above the art, the art larger (its glow has empty margins top and bottom, trimmed
+     with negative margins), the eyebrow on one line, and the two buttons as an equal pair. */
+  .hero { padding-top: 1.25rem; }
+  .hero-inner { gap: 1.25rem; }
+  .hero-art { max-width: 240px; margin: -.5rem auto -1rem; }
+  .eyebrow { white-space: nowrap; }
+  .eyebrow-long { display: none; }
+  .eyebrow-short { display: inline; }
+  .hero-actions { display: grid; grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr)); }
+  .hero-actions .btn { justify-content: center; text-align: center; padding-left: .75rem; padding-right: .75rem; }
   .mentor { grid-template-columns: 1fr; gap: 1rem; padding: 1.5rem; }
   .mentor-mark { width: 4.25rem; height: 4.25rem; font-size: 1.5rem; }
   .nav { flex-wrap: wrap; }

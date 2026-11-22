@@ -117,7 +117,10 @@
       var dx = b[0] - a[0], dy = b[1] - a[1], len = Math.sqrt(dx * dx + dy * dy), ux = dx / len, uy = dy / len;
       var sx = a[0] + ux * 24, sy = a[1] + uy * 24, ex = b[0] - ux * 24, ey = b[1] - uy * 24;
       var x = sx + (ex - sx) * p, y = sy + (ey - sy) * p;
-      var vis = t >= SEND_A && t < SEND_B + 0.05 ? Math.min(1, span(t, SEND_A, SEND_A + 0.12)) : 0;
+      // The card (about 13 units round) only shows once it is clear of the sender's ring, and fades out
+      // before it touches the receiver's, so it never sits on top of a node.
+      var clear = 16 / Math.max(1, len - 48);   // share of the trip covering 16 units
+      var vis = t >= SEND_A && t < SEND_B ? Math.min(span(p, clear * 0.6, clear * 1.6), 1 - span(p, 1 - clear * 1.4, 1 - clear * 0.4)) : 0;
       s.card.setAttribute('transform', 'translate(' + x.toFixed(1) + ' ' + y.toFixed(1) + ')');
       s.card.setAttribute('opacity', vis.toFixed(2));
       s.trail.setAttribute('x1', sx.toFixed(1)); s.trail.setAttribute('y1', sy.toFixed(1));
