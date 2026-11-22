@@ -62,7 +62,7 @@
 
 /* The step cards follow the walkthrough: the step it is showing lights up, and "Watch" plays from that step. */
 .js .steps .step { transition: border-color .25s, background-color .25s, transform .25s; }
-.steps .step.is-current { border-color: rgba(253, 187, 48, .4); background: var(--surface-2); transform: translateX(3px); }
+.steps .step.is-current { border-color: rgba(253, 187, 48, .75); background: var(--surface-2); transform: translateX(3px); }
 .steps .step.is-current .step-node { background: var(--gold); color: var(--navy); border-color: var(--gold); }
 .steps .step.is-current .step-num { background: var(--gold); color: var(--navy); border-color: var(--gold); }
 .step-watch {

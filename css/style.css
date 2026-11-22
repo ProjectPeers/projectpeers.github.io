@@ -454,6 +454,7 @@ p { margin: 0 0 1rem; }
 }
 .step-node svg { width: 1.45rem; height: 1.45rem; }
 .step.is-reached .step-node { border-color: var(--gold); color: var(--gold); box-shadow: 0 0 0 5px rgba(253, 187, 48, .12); }
+.step.is-reached { border-color: rgba(253, 187, 48, .35); }   /* the whole card edge warms with its station, no second gold line */
 /* While the track is scroll-driven (js/scroll-story.js adds .is-tracked), a step's pill stays grey until its station
    lights, so gold always means "reached". Without JS or with reduced motion every pill is gold. */
 .steps.is-tracked .step:not(.is-reached):not(.is-current) .step-num { color: var(--subtle); border-color: var(--line-strong); }
