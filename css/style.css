@@ -293,6 +293,17 @@ p { margin: 0 0 1rem; }
 .fact-list { margin: 1rem 0 0; display: grid; gap: .55rem; text-align: left; }
 .fact-list li { position: relative; padding-left: 1.1rem; font-size: .95rem; line-height: 1.55; color: var(--muted); }
 .fact-list li::before { content: ""; position: absolute; left: 0; top: .62em; width: .4rem; height: .4rem; border-radius: 50%; background: var(--gold); }
+/* Student cards (js/team-reveal.js, lines: true): as each bullet lands, its dot pops and a thin line of gold light
+   runs along under it once, then fades. */
+.person .fact-list li::after {
+  content: ""; position: absolute; left: 1.1rem; right: 0; bottom: -.22rem; height: 1px; pointer-events: none; opacity: 0;
+  background: linear-gradient(90deg, rgba(253, 187, 48, 0), rgba(253, 187, 48, .9) 70%, rgba(255, 236, 190, 1));
+  box-shadow: 0 0 8px rgba(253, 187, 48, .6); transform-origin: left center; transform: scaleX(0);
+}
+.person .fact-list li.line-in::after { animation: line-run .75s ease-out; }
+.person .fact-list li.line-in::before { animation: dot-pop .4s cubic-bezier(.34, 1.56, .64, 1); }
+@keyframes line-run { 0% { opacity: 1; transform: scaleX(0); } 55% { opacity: 1; transform: scaleX(1); } 100% { opacity: 0; transform: scaleX(1); } }
+@keyframes dot-pop { 0% { transform: scale(0); box-shadow: 0 0 0 0 rgba(253, 187, 48, .7); } 60% { transform: scale(1.5); } 100% { transform: scale(1); box-shadow: 0 0 0 .45rem rgba(253, 187, 48, 0); } }
 /* A light that runs round each mentor card's border (span added by js/mentors-honor.js once the wreaths
    have grown): gold on both, clockwise on the sponsor's card and anticlockwise on the advisor's. */
 @property --trail-angle { syntax: "<angle>"; inherits: false; initial-value: 0deg; }

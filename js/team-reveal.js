@@ -1,15 +1,18 @@
 /* Team and mentor cards: select a name to reveal that person's details.
-   The detail condenses out of drifting gold "cosmic dust": particles gather on each word,
-   then the word sharpens into view. The other cards in the same group dim while one is open.
+   The mentor cards' detail condenses out of drifting gold "cosmic dust": particles gather on each word,
+   then the word sharpens into view. The student cards keep the stars and the gold burst but reveal their
+   bullets line by line (lines: true), so even a long card is readable in under a second.
+   The other cards in the same group dim while one is open.
    Only one card per group is open at a time; select it again, press Escape or click outside to close it.
    Without JS the detail is always shown; with reduced motion it simply appears. */
 (function () {
   'use strict';
   // list: the group; card: one card; mark: where the dust bursts from; hintAfter: a card with data-hint gets a pill after this;
   // invite: the cards invite a click with motion (a "+", a hover spotlight, a wave) instead of a label;
-  // float: on wide screens the open card floats over the row below instead of pushing it down.
+  // float: on wide screens the open card floats over the row below instead of pushing it down;
+  // lines: reveal the detail bullet by bullet (fast) instead of word by word with gathering dust.
   var GROUPS = [
-    { list: '.cards-team', card: '.person', mark: '.avatar', invite: true, float: true },
+    { list: '.cards-team', card: '.person', mark: '.avatar', invite: true, float: true, lines: true },
     { list: '.mentors', card: '.mentor', mark: '.mentor-mark', hintAfter: '.mentor-org', float: false, equal: true }
   ];
   GROUPS.forEach(setup);
@@ -37,6 +40,27 @@
     return Array.prototype.slice.call(card.querySelectorAll('.person-detail .dust-word'));
   }
 
+  /* Student cards: each bullet slides up a little and sharpens, 0.08 s after the one before; as it lands its gold dot
+     pops and a thin line of gold light runs along under it (css .line-in). All of them are in within about 0.8 s. */
+  function revealLines(card) {
+    var items = Array.prototype.slice.call(card.querySelectorAll('.person-detail li, .person-detail p'));
+    function reset() { items.forEach(function (li) { li.classList.remove('line-in'); }); }
+    reset();
+    if (!hasGsap) return { stop: reset, finish: function () {} };
+    gsap.killTweensOf(items);
+    items.forEach(function (li, i) {
+      gsap.fromTo(li, { opacity: 0, y: 8, filter: 'blur(4px)' }, {
+        opacity: 1, y: 0, filter: 'blur(0px)', duration: .4, ease: 'power2.out', delay: .1 + i * .08,
+        onStart: function () { li.classList.add('line-in'); },
+        onComplete: function () { gsap.set(li, { clearProps: 'opacity,transform,filter' }); }
+      });
+    });
+    return {
+      stop: function () { gsap.killTweensOf(items); gsap.set(items, { clearProps: 'opacity,transform,filter' }); reset(); },
+      finish: function () { gsap.set(items, { clearProps: 'opacity,transform,filter' }); }
+    };
+  }
+
   function dust(card) {
     var canvas = document.createElement('canvas');
     canvas.className = 'person-dust';
@@ -57,7 +81,8 @@
     var ox = av.left + av.width / 2 - box.left, oy = av.top + av.height / 2 - box.top;
     var parts = [];
     var stars = [];
-    var ws = words(card);
+    var ws = cfg.lines ? [] : words(card);
+    var lineTweens = cfg.lines ? revealLines(card) : null;
 
     // Ambient star field that twinkles while the card is open.
     for (var s = 0; s < 46; s++) {
@@ -161,10 +186,14 @@
         cancelAnimationFrame(raf);
         if (hasGsap) gsap.killTweensOf(ws);
         ws.forEach(function (w) { w.style.cssText = ''; });
+        if (lineTweens) lineTweens.stop();
         canvas.remove();
       },
       // Make sure every word shows even if frames were skipped (a hidden tab).
-      finish: function () { targets.forEach(function (tg) { tg.el.style.opacity = '1'; tg.el.style.filter = ''; tg.el.style.transform = ''; }); }
+      finish: function () {
+        targets.forEach(function (tg) { tg.el.style.opacity = '1'; tg.el.style.filter = ''; tg.el.style.transform = ''; });
+        if (lineTweens) lineTweens.finish();
+      }
     };
   }
 
